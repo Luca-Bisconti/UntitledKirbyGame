@@ -74,7 +74,7 @@ public final class PlayerController implements InputHandler, Updatable {
 
         int direction = Boolean.compare(right, left);
         double x = transform.posX();
-        if (direction != 0 && !(grounded && (lookUp || crouch))) {
+        if (direction != 0 && !(grounded && crouch)) {
             x += direction * MOVE_SPEED * dt;
         }
         x = Math.clamp(x, minX, maxX);
@@ -99,7 +99,7 @@ public final class PlayerController implements InputHandler, Updatable {
             pose = PlayerPose.CROUCH;
         } else if (lookUp) {
             pose = PlayerPose.LOOK_UP;
-        } else if (left || right) {
+        } else if (direction != 0) {
             pose = PlayerPose.WALK;
         } else {
             pose = PlayerPose.IDLE;

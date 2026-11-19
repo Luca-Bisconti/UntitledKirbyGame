@@ -7,6 +7,8 @@ import it.unicam.cs.mpgc.rpg130396.core.nodes.Node;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Sprite;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.SpriteAnimator;
+import it.unicam.cs.mpgc.rpg130396.core.rendering.Compositor;
+import it.unicam.cs.mpgc.rpg130396.core.rendering.PassBinding;
 import it.unicam.cs.mpgc.rpg130396.core.rendering.RenderTarget;
 import it.unicam.cs.mpgc.rpg130396.core.rendering.Renderer;
 import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAnimation;
@@ -85,19 +87,22 @@ public class JavaFXLauncher extends Application {
 
         Camera camera = new Camera("MainCamera", LOGICAL_WIDTH, LOGICAL_HEIGHT);
         Scene scene = new Scene(root, camera, true);
-        Map<Integer, RenderTarget> targets = Map.of(
-                0, new JavaFXRenderTarget(640, 360),
-                1, new JavaFXRenderTarget(LOGICAL_WIDTH, LOGICAL_HEIGHT),
-                2, new JavaFXRenderTarget(LOGICAL_WIDTH, LOGICAL_HEIGHT)
-        );
-
+        RenderTarget backgroundTarget = new JavaFXRenderTarget(640, 360);
+        RenderTarget groundTarget = new JavaFXRenderTarget(LOGICAL_WIDTH, LOGICAL_HEIGHT);
+        RenderTarget characterTarget = new JavaFXRenderTarget(LOGICAL_WIDTH, LOGICAL_HEIGHT);
+        RenderTarget screenTarget = gameWindow.getScreenTarget();
+        Compositor compositor = new Compositor();
         Renderer renderer = new Renderer(
                 gameWindow.getDrawContext(),
-                targets,
-                gameWindow.getScreenTarget(),
+                Map.of(0, backgroundTarget, 1, groundTarget, 2, characterTarget),
+                screenTarget,
                 LOGICAL_WIDTH,
                 LOGICAL_HEIGHT,
-                List.of()
+                List.of(
+                        new PassBinding(compositor, backgroundTarget, screenTarget, true),
+                        new PassBinding(compositor, groundTarget, screenTarget, false),
+                        new PassBinding(compositor, characterTarget, screenTarget, false)
+                )
         );
 
         gameWindow.setFrameListener(dt -> {

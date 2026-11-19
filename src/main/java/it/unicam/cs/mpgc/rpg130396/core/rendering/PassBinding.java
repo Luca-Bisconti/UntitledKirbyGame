@@ -8,5 +8,8 @@ public record PassBinding(RenderPass pass, RenderTarget input, RenderTarget outp
         Objects.requireNonNull(pass);
         Objects.requireNonNull(input);
         Objects.requireNonNull(output);
+        if (input == output) {
+            throw new IllegalArgumentException("Pass input and output must be distinct render targets");
+        }
     }
 }

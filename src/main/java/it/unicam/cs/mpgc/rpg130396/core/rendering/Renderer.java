@@ -20,7 +20,6 @@ public class Renderer {
     private final DrawContext context;
     private final RenderTarget sceneTarget;
     private final Map<Integer, RenderTarget> layerTargets;
-    private final List<PassBinding> composition;
     private final int logicalWidth;
 
     private List<PassBinding> bindings;
@@ -34,7 +33,6 @@ public class Renderer {
         this.sceneTarget = Objects.requireNonNull(sceneTarget);
         requirePositiveDimensions(sceneTarget);
         layerTargets = Map.of();
-        composition = List.of();
         logicalWidth = 0;
         this.bindings = validatedPasses(bindings);
     }
@@ -61,8 +59,6 @@ public class Renderer {
         }
 
         Set<RenderTarget> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        List<PassBinding> passes = new ArrayList<>();
-        Compositor compositor = new Compositor();
         RenderTarget previous = null;
         for (RenderTarget target : this.layerTargets.values()) {
             if (target == output) {
@@ -74,13 +70,12 @@ public class Renderer {
             if (!seen.add(target)) {
                 throw new IllegalArgumentException("Layers sharing a target must be consecutive");
             }
-            passes.add(new PassBinding(compositor, target, output, passes.isEmpty()));
             previous = target;
         }
-        composition = List.copyOf(passes);
-        validateCompositionSizes();
+        validateLayerSizes();
         this.bindings = validatedPasses(bindings);
     }
+
 
     public Renderer setPipeline(List<PassBinding> bindings) {
         this.bindings = validatedPasses(bindings);
@@ -96,7 +91,7 @@ public class Renderer {
     public void render(DrawList drawList) {
         List<DrawCall> calls = Objects.requireNonNull(drawList).getCalls();
         validatePassSizes(bindings);
-        if (composition.isEmpty()) {
+        if (layerTargets.isEmpty()) {
             requirePositiveDimensions(sceneTarget);
             context.setTarget(sceneTarget);
             context.clear();
@@ -105,13 +100,12 @@ public class Renderer {
             }
         } else {
             renderLayers(calls);
-            runPasses(composition);
         }
         runPasses(bindings);
     }
 
     private void renderLayers(List<DrawCall> calls) {
-        validateCompositionSizes();
+        validateLayerSizes();
         Map<Integer, List<DrawCall>> callsByLayer = new HashMap<>();
         for (DrawCall call : calls) {
             if (!layerTargets.containsKey(call.layer())) {
@@ -143,11 +137,10 @@ public class Renderer {
         }
     }
 
-    private void validateCompositionSizes() {
+    private void validateLayerSizes() {
         requireAspectRatio(sceneTarget.width(), sceneTarget.height());
-        for (PassBinding binding : composition) {
-            RenderTarget input = binding.input();
-            requireAspectRatio(input.width(), input.height());
+        for (RenderTarget target : layerTargets.values()) {
+            requireAspectRatio(target.width(), target.height());
         }
     }
 
