@@ -3,15 +3,12 @@ package it.unicam.cs.mpgc.rpg130396.core.math;
 public class Transform2D {
 
     public float posX, posY;
-    public  float scaleX, scaleY;
-    public float originX, originY;
     public float rotation;
+    public float scale;
 
     public Transform2D(){
 
         posX = posY = 0;
-        originX = originY = 0.5f;
-        scaleX = scaleY = 1.0f;
         rotation = 0;
     }
 
@@ -27,12 +24,6 @@ public class Transform2D {
         return this;
     }
 
-    public Transform2D setScale(float scaleX, float scaleY) {
-        this.scaleX = scaleX;
-        this.scaleY = scaleY;
-        return this;
-    }
-
     public Transform2D rotate(float rotation){
         this.rotation += rotation;
         return  this;
@@ -43,9 +34,37 @@ public class Transform2D {
         return this;
     }
 
-    public Transform2D setOrigin(float originX, float originY) {
-        this.originX = originX;
-        this.originY = originY;
+
+    public Transform2D set(Transform2D t){
+        posX = t.posX;
+        posY = t.posY;
+
+        rotation = t.rotation;
+        scale = t.scale;
+
         return this;
     }
+
+    public Transform2D copy() { return new Transform2D().set(this); }
+
+    public static void compose(Transform2D p, Transform2D l, Transform2D out) {
+        float cos = (float) Math.cos(p.rotation);   
+        float sin = (float) Math.sin(p.rotation);
+
+
+        float x = l.posX * p.scale;
+        float y = l.posY * p.scale;
+
+
+        float rx = x * cos - y * sin;
+        float ry = x * sin + y * cos;
+
+
+        out.posX = p.posX + rx;
+        out.posY = p.posY + ry;
+
+        out.rotation = p.rotation + l.rotation;
+        out.scale    = p.scale * l.scale;
+    }
+
 }

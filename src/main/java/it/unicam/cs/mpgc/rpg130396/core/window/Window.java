@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg130396.core.window;
 
+import it.unicam.cs.mpgc.rpg130396.core.rendering.DrawContext;
+import it.unicam.cs.mpgc.rpg130396.core.rendering.RenderTarget;
+
 public interface Window {
 
     public void open();
@@ -19,4 +22,9 @@ public interface Window {
     public double getHeight();
     public boolean isResizable();
     public String getIconFilePath();
+
+
+    public Window setFrameListener(FrameListener listener);
+    public DrawContext getDrawContext();
+    public RenderTarget getScreenTarget();
 }
