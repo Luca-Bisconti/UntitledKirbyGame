@@ -1,6 +1,7 @@
 
 package it.unicam.cs.mpgc.rpg130396.core.rendering;
 
+import it.unicam.cs.mpgc.rpg130396.core.math.DirectionalLight;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.DrawList;
 
 import java.util.List;
@@ -28,21 +29,27 @@ public class Renderer {
         return this;
     }
 
-    public void render(DrawList drawList) {
+    public void render(
+            DrawList drawList,
+            List<DirectionalLight> lights
+    ) {
 
         Objects.requireNonNull(drawList);
+        Objects.requireNonNull(lights);
 
+        context.setDirectionalLights(lights);
 
         context.setTarget(sceneTarget);
         context.clear();
 
         for (DrawCall drawCall : drawList.getCalls()) {
+
             context.drawTexture(
                     drawCall.textureRegion(),
+                    drawCall.material(),
                     drawCall.transform2D()
             );
         }
-
 
         for (PassBinding binding : bindings) {
 
