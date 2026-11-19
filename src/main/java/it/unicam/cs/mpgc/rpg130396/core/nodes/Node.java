@@ -24,10 +24,10 @@ public abstract class Node {
     private Transform2D world;
 
 
-    public boolean visible = true;
-    public boolean active = true;
-    public int layer = 0;
-    public int zIndex = 0;
+    private boolean visible = true;
+    private boolean active = true;
+    private int layer = 0;
+    private int zIndex = 0;
 
     public Node(String name) {
         this.name = Objects.requireNonNull(name);
@@ -35,6 +35,38 @@ public abstract class Node {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
+    }
+
+    public int getZIndex() {
+        return zIndex;
+    }
+
+    public void setZIndex(int zIndex) {
+        this.zIndex = zIndex;
     }
 
     public Node getParent() {
@@ -197,7 +229,8 @@ public abstract class Node {
         }
     }
 
-    public void update() {
+    public void update(double dt) {
+        Updatable.requireValidDeltaTime(dt);
 
         if (!active) {
             return;
@@ -206,7 +239,7 @@ public abstract class Node {
 
         forEachComp(
                 Updatable.class,
-                Updatable::update
+                component -> component.update(dt)
         );
 
 
@@ -215,7 +248,7 @@ public abstract class Node {
         for (Node child : childrenSnapshot) {
 
             if (child.parent == this) {
-                child.update();
+                child.update(dt);
             }
         }
     }

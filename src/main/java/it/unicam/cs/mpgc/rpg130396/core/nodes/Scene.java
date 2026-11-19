@@ -42,9 +42,10 @@ public class Scene {
         }
     }
 
-    public void update() {
+    public void update(double dt) {
+        Updatable.requireValidDeltaTime(dt);
         if (isActive) {
-            root.update();
+            root.update(dt);
         }
     }
 }

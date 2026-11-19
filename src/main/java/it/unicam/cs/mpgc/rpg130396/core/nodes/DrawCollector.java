@@ -38,7 +38,7 @@ public class DrawCollector {
             DrawList drawList
     ) {
 
-        if (!node.active || !node.visible) {
+        if (!node.isActive() || !node.isVisible()) {
             return;
         }
 
