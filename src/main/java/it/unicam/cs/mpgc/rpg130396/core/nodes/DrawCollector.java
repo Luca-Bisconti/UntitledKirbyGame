@@ -83,7 +83,6 @@ public class DrawCollector {
 
             drawList.add(new DrawCall(
                     call.textureRegion(),
-                    call.material(),
                     screenTransform,
                     call.layer(),
                     call.zIndex()

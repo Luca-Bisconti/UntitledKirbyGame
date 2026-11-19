@@ -7,7 +7,6 @@ import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 public class Sprite extends Node implements Drawable {
 
     private TextureRegion region;
-    private Material material;
 
     public Sprite(String name) {
         super(name);
@@ -22,15 +21,6 @@ public class Sprite extends Node implements Drawable {
         return this;
     }
 
-    public Material getMaterial() {
-        return material;
-    }
-
-    public Sprite setMaterial(Material material) {
-        this.material = material;
-        return this;
-    }
-
     @Override
     public void addDrawcall(DrawList out) {
         if (region == null) {
@@ -39,7 +29,6 @@ public class Sprite extends Node implements Drawable {
 
         out.add(new DrawCall(
                 region,
-                material,
                 getWorld().copy(),
                 layer,
                 zIndex

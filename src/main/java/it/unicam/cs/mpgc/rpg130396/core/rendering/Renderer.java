@@ -32,17 +32,16 @@ public class Renderer {
 
         Objects.requireNonNull(drawList);
 
-
         context.setTarget(sceneTarget);
         context.clear();
 
         for (DrawCall drawCall : drawList.getCalls()) {
+
             context.drawTexture(
                     drawCall.textureRegion(),
                     drawCall.transform2D()
             );
         }
-
 
         for (PassBinding binding : bindings) {
 

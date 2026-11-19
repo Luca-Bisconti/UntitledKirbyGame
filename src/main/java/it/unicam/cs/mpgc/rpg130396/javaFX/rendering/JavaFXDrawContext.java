@@ -32,8 +32,7 @@ public class JavaFXDrawContext implements DrawContext {
         this.target = javaFXTarget;
         this.gc = javaFXTarget.canvas().getGraphicsContext2D();
 
-
-        this.gc.setImageSmoothing(false);
+        gc.setImageSmoothing(false);
     }
 
     @Override
@@ -42,6 +41,7 @@ public class JavaFXDrawContext implements DrawContext {
         gc.save();
 
         gc.setTransform(new Affine());
+
         gc.clearRect(
                 0,
                 0,
@@ -53,7 +53,10 @@ public class JavaFXDrawContext implements DrawContext {
     }
 
     @Override
-    public void drawTexture(TextureRegion region, Transform2D transform) {
+    public void drawTexture(
+            TextureRegion region,
+            Transform2D transform
+    ) {
 
         Texture texture = region.getTexture();
 
@@ -75,12 +78,10 @@ public class JavaFXDrawContext implements DrawContext {
         gc.drawImage(
                 javaFXTexture.image(),
 
-
                 region.posX,
                 region.posY,
                 width,
                 height,
-
 
                 -region.originX,
                 -region.originY,
