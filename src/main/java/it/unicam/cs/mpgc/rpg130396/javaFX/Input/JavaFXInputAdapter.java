@@ -15,12 +15,11 @@ public class JavaFXInputAdapter {
 
     public JavaFXInputAdapter(Scene scene, PolledInput input) {
 
-        bindings.put(KeyCode.LEFT, Action.LEFT);
-        bindings.put(KeyCode.RIGHT, Action.RIGHT);
-        bindings.put(KeyCode.UP, Action.UP);
-        bindings.put(KeyCode.DOWN, Action.DOWN);
-        bindings.put(KeyCode.Z, Action.JUMP);
-        bindings.put(KeyCode.X, Action.ATTACK);
+        bindings.put(KeyCode.A, Action.LEFT);
+        bindings.put(KeyCode.D, Action.RIGHT);
+        bindings.put(KeyCode.W, Action.UP);
+        bindings.put(KeyCode.S, Action.DOWN);
+        bindings.put(KeyCode.SPACE, Action.JUMP);
 
         scene.setOnKeyPressed(e -> {
             Action action = bindings.get(e.getCode());

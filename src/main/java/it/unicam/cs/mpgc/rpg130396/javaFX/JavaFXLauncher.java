@@ -1,7 +1,7 @@
 
 package it.unicam.cs.mpgc.rpg130396.javaFX;
 
-import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
+import it.unicam.cs.mpgc.rpg130396.core.input.PolledInput;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Camera;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Node;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
@@ -13,6 +13,8 @@ import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAnimation;
 import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAtlas;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 import it.unicam.cs.mpgc.rpg130396.core.window.Window;
+import it.unicam.cs.mpgc.rpg130396.game.PlayerController;
+import it.unicam.cs.mpgc.rpg130396.javaFX.Input.JavaFXInputAdapter;
 import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXRenderTarget;
 import it.unicam.cs.mpgc.rpg130396.javaFX.resources.JavaFXTexture;
 import it.unicam.cs.mpgc.rpg130396.javaFX.window.JavaFXWindow;
@@ -32,6 +34,10 @@ public class JavaFXLauncher extends Application {
     private static final int LOGICAL_WIDTH = 240;
     private static final int LOGICAL_HEIGHT = 135;
 
+    private static final int GROUND_HEIGHT = 32;
+    private static final int CHARACTER_HALF_WIDTH = 13;
+    private static final int CHARACTER_FOOT_OFFSET = 9;
+
     private Window gameWindow;
 
     @Override
@@ -42,6 +48,14 @@ public class JavaFXLauncher extends Application {
                 "Kirby"
         ).setWidth(1920).setHeight(1080).setResizable(false);
 
+        PolledInput input = new PolledInput();
+        new JavaFXInputAdapter(primaryStage.getScene(), input);
+        primaryStage.focusedProperty().addListener((observable, wasFocused, focused) -> {
+            if (!focused) {
+                input.releaseAll();
+            }
+        });
+
         Node root = new Node("Root") {};
 
         Sprite background = solidSprite("Background", 0, LOGICAL_WIDTH, LOGICAL_HEIGHT, 0xFF334C79);
@@ -49,16 +63,24 @@ public class JavaFXLauncher extends Application {
 
         root.addChild(background);
 
-        Sprite ground = solidSprite("Ground", 1, LOGICAL_WIDTH, 32, 0xFF517A58);
-        ground.setLocal(ground.getLocal().withPosition(-LOGICAL_WIDTH / 2f, LOGICAL_HEIGHT / 2f - 32));
+        float groundTop = LOGICAL_HEIGHT / 2f - GROUND_HEIGHT;
+        Sprite ground = solidSprite("Ground", 1, LOGICAL_WIDTH, GROUND_HEIGHT, 0xFF517A58);
+        ground.setLocal(ground.getLocal().withPosition(-LOGICAL_WIDTH / 2f, groundTop));
         root.addChild(ground);
 
         Sprite character = new Sprite("Character");
         character.setLayer(2);
-        character.setLocal(new Transform2D(0, 101 - LOGICAL_HEIGHT / 2f, (float) Math.toRadians(30), 1));
+        float playerGroundY = groundTop - CHARACTER_FOOT_OFFSET;
+        character.setLocal(character.getLocal().withPosition(0, playerGroundY));
         SpriteAnimator animator = new SpriteAnimator(character);
+        SpriteAtlas atlas = createDemoAtlas();
+        SpriteAnimation idle = new SpriteAnimation(List.of(atlas.frame(0)), 0.125, true);
+        SpriteAnimation walk = new SpriteAnimation(
+                List.of(atlas.frame(0), atlas.frame(1), atlas.frame(2), atlas.frame(1)), 0.125, true);
+        float horizontalLimit = LOGICAL_WIDTH / 2f - CHARACTER_HALF_WIDTH;
+        character.addComponent(new PlayerController(character, animator, idle, walk,
+                -horizontalLimit, horizontalLimit, playerGroundY));
         character.addComponent(animator);
-        animator.play(createDemoAnimation());
         root.addChild(character);
 
         Camera camera = new Camera("MainCamera", LOGICAL_WIDTH, LOGICAL_HEIGHT);
@@ -79,14 +101,16 @@ public class JavaFXLauncher extends Application {
         );
 
         gameWindow.setFrameListener(dt -> {
+            scene.processInput(input);
             scene.update(dt);
+            input.endFrame();
             renderer.render(scene.collectDrawList());
         });
 
         gameWindow.open();
     }
 
-    private static SpriteAnimation createDemoAnimation() {
+    private static SpriteAtlas createDemoAtlas() {
         int cellWidth = 30;
         int cellHeight = 22;
         int pivotX = cellWidth / 2;
@@ -109,9 +133,7 @@ public class JavaFXLauncher extends Application {
         SnapshotParameters parameters = new SnapshotParameters();
         parameters.setFill(Color.TRANSPARENT);
         JavaFXTexture texture = new JavaFXTexture(canvas.snapshot(parameters, null));
-        SpriteAtlas atlas = new SpriteAtlas(texture, cellWidth, cellHeight, pivotX, pivotY);
-        return new SpriteAnimation(List.of(atlas.frame(0), atlas.frame(1), atlas.frame(2), atlas.frame(1)),
-                0.125, true);
+        return new SpriteAtlas(texture, cellWidth, cellHeight, pivotX, pivotY);
     }
 
     private static Sprite solidSprite(String name, int layer, int width, int height, int argb) {
