@@ -11,10 +11,14 @@ import javafx.scene.paint.Color;
 public class JavaFXRenderTarget implements RenderTarget {
 
     private final Canvas canvas;
+    private final SnapshotParameters snapshotParameters = new SnapshotParameters();
+    private WritableImage snapshot;
+    private JavaFXTexture snapshotTexture;
 
 
     public JavaFXRenderTarget(Canvas canvas) {
         this.canvas = canvas;
+        snapshotParameters.setFill(Color.TRANSPARENT);
     }
 
 
@@ -28,11 +32,18 @@ public class JavaFXRenderTarget implements RenderTarget {
     @Override public int height() { return (int) canvas.getHeight(); }
 
 
+
+
+
     @Override
     public Texture asTexture() {
-        SnapshotParameters params = new SnapshotParameters();
-        params.setFill(Color.TRANSPARENT);
-        WritableImage img = canvas.snapshot(params, null);
-        return new JavaFXTexture(img);
+        int width = Math.max(1, (int) Math.ceil(canvas.getWidth()));
+        int height = Math.max(1, (int) Math.ceil(canvas.getHeight()));
+        if (snapshot == null || snapshot.getWidth() != width || snapshot.getHeight() != height) {
+            snapshot = new WritableImage(width, height);
+            snapshotTexture = new JavaFXTexture(snapshot);
+        }
+        canvas.snapshot(snapshotParameters, snapshot);
+        return snapshotTexture;
     }
 }
