@@ -6,10 +6,11 @@ public class Transform2D {
     public float rotation;
     public float scale;
 
-    public Transform2D(){
-
-        posX = posY = 0;
+    public Transform2D() {
+        posX = 0;
+        posY = 0;
         rotation = 0;
+        scale = 1;
     }
 
     public Transform2D setPosition(float x, float y) {

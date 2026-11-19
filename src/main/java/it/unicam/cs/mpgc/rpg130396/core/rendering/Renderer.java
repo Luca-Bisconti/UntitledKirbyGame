@@ -1,32 +1,62 @@
+
 package it.unicam.cs.mpgc.rpg130396.core.rendering;
 
+import it.unicam.cs.mpgc.rpg130396.core.nodes.DrawList;
+
 import java.util.List;
+import java.util.Objects;
 
 public class Renderer {
 
-    private  List<PassBinding> bindings;
     private final DrawContext context;
+    private final RenderTarget sceneTarget;
 
-    public Renderer(List<PassBinding> bindings, DrawContext context) {
-        this.bindings = bindings;
-        this.context = context;
+    private List<PassBinding> bindings;
+
+    public Renderer(
+            DrawContext context,
+            RenderTarget sceneTarget,
+            List<PassBinding> bindings
+    ) {
+        this.context = Objects.requireNonNull(context);
+        this.sceneTarget = Objects.requireNonNull(sceneTarget);
+        setPipeline(bindings);
     }
 
-    public Renderer setPipeline(List<PassBinding> bindings){
+    public Renderer setPipeline(List<PassBinding> bindings) {
         this.bindings = List.copyOf(bindings);
         return this;
     }
 
-    public void render() {
+    public void render(DrawList drawList) {
 
-        for (PassBinding b : bindings) {
+        Objects.requireNonNull(drawList);
 
-            context.setTarget(b.output());
 
-            if (b.clearOutput())
+        context.setTarget(sceneTarget);
+        context.clear();
+
+        for (DrawCall drawCall : drawList.getCalls()) {
+            context.drawTexture(
+                    drawCall.textureRegion(),
+                    drawCall.transform2D()
+            );
+        }
+
+
+        for (PassBinding binding : bindings) {
+
+            context.setTarget(binding.output());
+
+            if (binding.clearOutput()) {
                 context.clear();
+            }
 
-            b.pass().render(context, b.input(), b.output());
+            binding.pass().render(
+                    context,
+                    binding.input(),
+                    binding.output()
+            );
         }
     }
 }

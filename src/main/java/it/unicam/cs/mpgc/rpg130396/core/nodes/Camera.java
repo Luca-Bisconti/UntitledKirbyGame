@@ -24,14 +24,15 @@ public final class Camera extends Node {
 
     public void setAnchor(float x, float y) { anchorX = x; anchorY = y; }
 
-
     public Rect viewRect(float margin) {
-        Transform2D w = getWorld();
-        return new Rect(
-                w.posX - anchorX / zoom - margin,
-                w.posY - anchorY / zoom - margin,
-                w.posX + (resX - anchorX) / zoom + margin,
-                w.posY + (resY - anchorY) / zoom + margin);
+        Transform2D world = getWorld();
+
+        float minX = world.posX - anchorX / zoom - margin;
+        float minY = world.posY - anchorY / zoom - margin;
+        float maxX = world.posX + (resX - anchorX) / zoom + margin;
+        float maxY = world.posY + (resY - anchorY) / zoom + margin;
+
+        return new Rect(minX, minY, maxX - minX, maxY - minY);
     }
 
 

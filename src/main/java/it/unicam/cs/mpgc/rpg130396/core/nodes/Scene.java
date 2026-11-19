@@ -11,7 +11,7 @@ public class Scene {
     public Scene(Node root, Camera camera, boolean isActive) {
         this.root = root;
         this.camera = camera;
-        this.isActive = true;
+        this.isActive = isActive;
     }
 
     public Node root(){

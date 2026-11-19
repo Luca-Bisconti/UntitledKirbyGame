@@ -1,3 +1,4 @@
+
 package it.unicam.cs.mpgc.rpg130396.core.nodes;
 
 import it.unicam.cs.mpgc.rpg130396.core.input.InputHandler;
@@ -8,87 +9,157 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public abstract class Node{
+public abstract class Node {
 
-    String name;
+    private String name;
     private Node parent;
+
     private final List<Node> children = new ArrayList<>();
+    private final List<Component> components = new ArrayList<>();
 
 
     public final Transform2D local = new Transform2D();
-    private Transform2D world = new Transform2D();   
+
+    private final Transform2D world = new Transform2D();
     private boolean worldDirty = true;
-    List<Component> components;
 
 
     public boolean visible = true;
-    public boolean active = true;        
-    public int layer = 0;                
+    public boolean active = true;
+    public int layer = 0;
     public int zIndex = 0;
 
-    public Node(String name){
-        Objects.requireNonNull(name);
-        this.name = name;
-        parent = null;
-
-
+    public Node(String name) {
+        this.name = Objects.requireNonNull(name);
+        this.parent = null;
     }
 
-    public Node getParent() { return parent; }
-    public List<Node> getChildren() { return Collections.unmodifiableList(children); }
+    public String getName() {
+        return name;
+    }
+
+    public Node getParent() {
+        return parent;
+    }
+
+    public List<Node> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+
+
+
+
 
     public void addChild(Node child) {
+
+        Objects.requireNonNull(child, "Child cannot be null");
+
+        if (child == this)
+            throw new IllegalArgumentException("A node cannot be its own child");
+
+        if (child.parent != null)
+            throw new IllegalStateException("Node already has a parent");
+
+
+        Node ancestor = this;
+
+        while (ancestor != null) {
+
+            if (ancestor == child)
+                throw new IllegalArgumentException("Adding this child would create a cycle");
+
+            ancestor = ancestor.parent;
+        }
+
         child.parent = this;
         children.add(child);
-        markDirty();
+
+        child.markDirty();
     }
 
-    private void markDirty(){
+    private void markDirty() {
 
-        if(worldDirty)
+        if (worldDirty)
             return;
 
         worldDirty = true;
 
-        for(Node node : children){
+        for (Node node : children) {
             node.markDirty();
         }
-
     }
+
+
+
 
 
     public Transform2D getWorld() {
+
         if (worldDirty) {
-            if (parent == null) world.set(local);
-            else Transform2D.compose(parent.getWorld(), local, world);
+
+            if (parent == null)
+                world.set(local);
+            else
+                Transform2D.compose(parent.getWorld(), local, world);
+
             worldDirty = false;
         }
-        return world;                 
+
+        return world;
     }
 
-    public void addComponent(Component component){
-        components.add(component);
+
+
+
+
+    public void addComponent(Component component) {
+        components.add(Objects.requireNonNull(component));
     }
 
-    public <T> List<T> getComp(Class<T> ComponentClass) {
+    public <T> List<T> getComp(Class<T> componentClass) {
+
         return components.stream()
-                .filter(ComponentClass::isInstance)
-                .map(ComponentClass::cast)
+                .filter(componentClass::isInstance)
+                .map(componentClass::cast)
                 .collect(Collectors.toList());
     }
 
-
-
     protected <T> void forEachComp(Class<T> type, Consumer<T> action) {
+
         getComp(type).forEach(action);
     }
 
+
+
+
+
     public void processInput(InputState input) {
+
+        if (!active)
+            return;
+
         forEachComp(InputHandler.class, c -> c.handleInput(input));
+
+
+
+        List<Node> childrenSnapshot = new ArrayList<>(children);
+
+        for (Node child : childrenSnapshot) {
+            child.processInput(input);
+        }
     }
 
     public void update() {
-        forEachComp(Updatable.class, Updatable::update);
-    }
 
+        if (!active)
+            return;
+
+        forEachComp(Updatable.class, Updatable::update);
+
+        List<Node> childrenSnapshot = new ArrayList<>(children);
+
+        for (Node child : childrenSnapshot) {
+            child.update();
+        }
+    }
 }

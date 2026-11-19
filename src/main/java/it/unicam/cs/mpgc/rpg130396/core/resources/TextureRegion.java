@@ -5,7 +5,7 @@ public class TextureRegion {
     public int posX, posY;
     public int height, width;
     private final Texture texture;
-    public int origX, orignY;
+    public int originX, originY;
 
     public TextureRegion( Texture texture){
 
