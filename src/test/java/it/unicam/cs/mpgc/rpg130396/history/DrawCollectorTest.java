@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DrawCollectorTest {
     @Test
-    void exposesCollectorFailureForAVisibleSprite() {
+    void collectsOnlySpritesInsideTheCamera() {
         var texture = new Texture() {
             public int width() { return 8; }
             public int height() { return 8; }
@@ -25,7 +25,8 @@ class DrawCollectorTest {
         root.addChild(inside);
         root.addChild(outside);
         var camera = new Camera("camera", 100, 50);
-        var scene = new Scene(root, camera, true);
-        assertThrows(ClassCastException.class, () -> new DrawCollector().collect(scene));
+        var calls = new DrawCollector().collect(new Scene(root, camera, true)).getCalls();
+        assertEquals(1, calls.size());
+        assertSame(inside.getRegion(), calls.getFirst().textureRegion());
     }
 }

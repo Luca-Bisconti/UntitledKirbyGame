@@ -5,13 +5,15 @@ import it.unicam.cs.mpgc.rpg130396.core.input.InputHandler;
 import it.unicam.cs.mpgc.rpg130396.core.input.InputState;
 import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public abstract class Node {
 
-    private String name;
+    private final String name;
     private Node parent;
 
     private final List<Node> children = new ArrayList<>();
@@ -31,7 +33,6 @@ public abstract class Node {
 
     public Node(String name) {
         this.name = Objects.requireNonNull(name);
-        this.parent = null;
     }
 
     public String getName() {
@@ -54,53 +55,77 @@ public abstract class Node {
 
         Objects.requireNonNull(child, "Child cannot be null");
 
-        if (child == this)
-            throw new IllegalArgumentException("A node cannot be its own child");
+        if (child == this) {
+            throw new IllegalArgumentException(
+                    "A node cannot be its own child"
+            );
+        }
 
-        if (child.parent != null)
-            throw new IllegalStateException("Node already has a parent");
+        if (child.parent != null) {
+            throw new IllegalStateException(
+                    "Node already has a parent"
+            );
+        }
 
 
         Node ancestor = this;
 
         while (ancestor != null) {
 
-            if (ancestor == child)
-                throw new IllegalArgumentException("Adding this child would create a cycle");
+            if (ancestor == child) {
+                throw new IllegalArgumentException(
+                        "Adding this child would create a cycle"
+                );
+            }
 
             ancestor = ancestor.parent;
         }
 
-        child.parent = this;
         children.add(child);
+        child.parent = this;
 
         child.markDirty();
     }
 
-    private void markDirty() {
+    public boolean removeChild(Node child) {
 
-        if (worldDirty)
-            return;
-
-        worldDirty = true;
-
-        for (Node node : children) {
-            node.markDirty();
+        if (child == null || !children.remove(child)) {
+            return false;
         }
+
+        child.parent = null;
+        child.markDirty();
+
+        return true;
     }
 
 
 
 
+
+    private void markDirty() {
+
+        worldDirty = true;
+
+
+        for (Node child : children) {
+            child.markDirty();
+        }
+    }
 
     public Transform2D getWorld() {
 
         if (worldDirty) {
 
-            if (parent == null)
+            if (parent == null) {
                 world.set(local);
-            else
-                Transform2D.compose(parent.getWorld(), local, world);
+            } else {
+                Transform2D.compose(
+                        parent.getWorld(),
+                        local,
+                        world
+                );
+            }
 
             worldDirty = false;
         }
@@ -113,20 +138,39 @@ public abstract class Node {
 
 
     public void addComponent(Component component) {
-        components.add(Objects.requireNonNull(component));
+        components.add(
+                Objects.requireNonNull(component)
+        );
+    }
+
+    public boolean removeComponent(Component component) {
+        return components.remove(component);
     }
 
     public <T> List<T> getComp(Class<T> componentClass) {
 
-        return components.stream()
-                .filter(componentClass::isInstance)
-                .map(componentClass::cast)
-                .collect(Collectors.toList());
+        List<T> result = new ArrayList<>();
+
+        for (Component component : components) {
+
+            if (componentClass.isInstance(component)) {
+                result.add(componentClass.cast(component));
+            }
+        }
+
+        return List.copyOf(result);
     }
 
-    protected <T> void forEachComp(Class<T> type, Consumer<T> action) {
+    protected <T> void forEachComp(
+            Class<T> type,
+            Consumer<T> action
+    ) {
 
-        getComp(type).forEach(action);
+        List<T> snapshot = getComp(type);
+
+        for (T component : snapshot) {
+            action.accept(component);
+        }
     }
 
 
@@ -135,31 +179,49 @@ public abstract class Node {
 
     public void processInput(InputState input) {
 
-        if (!active)
+        if (!active) {
             return;
+        }
 
-        forEachComp(InputHandler.class, c -> c.handleInput(input));
 
+        forEachComp(
+                InputHandler.class,
+                component -> component.handleInput(input)
+        );
 
 
         List<Node> childrenSnapshot = new ArrayList<>(children);
 
         for (Node child : childrenSnapshot) {
-            child.processInput(input);
+
+
+
+            if (child.parent == this) {
+                child.processInput(input);
+            }
         }
     }
 
     public void update() {
 
-        if (!active)
+        if (!active) {
             return;
+        }
 
-        forEachComp(Updatable.class, Updatable::update);
+
+        forEachComp(
+                Updatable.class,
+                Updatable::update
+        );
+
 
         List<Node> childrenSnapshot = new ArrayList<>(children);
 
         for (Node child : childrenSnapshot) {
-            child.update();
+
+            if (child.parent == this) {
+                child.update();
+            }
         }
     }
 }

@@ -1,12 +1,15 @@
+
 package it.unicam.cs.mpgc.rpg130396.javaFX;
 
-import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
-import it.unicam.cs.mpgc.rpg130396.core.nodes.DrawList;
-import it.unicam.cs.mpgc.rpg130396.core.rendering.*;
+import it.unicam.cs.mpgc.rpg130396.core.nodes.Camera;
+import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
+import it.unicam.cs.mpgc.rpg130396.core.nodes.Sprite;
+import it.unicam.cs.mpgc.rpg130396.core.rendering.Renderer;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 import it.unicam.cs.mpgc.rpg130396.core.window.Window;
 import it.unicam.cs.mpgc.rpg130396.javaFX.resources.JavaFXTexture;
 import it.unicam.cs.mpgc.rpg130396.javaFX.window.JavaFXWindow;
+
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -18,24 +21,37 @@ public class JavaFXLauncher extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        gameWindow = new JavaFXWindow(primaryStage, "Kirby").setResizable(false);
 
-        TextureRegion sprite = new TextureRegion(
+        gameWindow = new JavaFXWindow(
+                primaryStage,
+                "Kirby"
+        ).setResizable(false);
+
+
+        TextureRegion region = new TextureRegion(
                 JavaFXTexture.solid(64, 64, 0xFFFF69B4)
         );
 
-        Transform2D transform = new Transform2D()
-                .setPosition(400, 300);
+        region.originX = 32;
+        region.originY = 32;
 
-        DrawList drawList = new DrawList();
 
-        drawList.add(new DrawCall(
+        Sprite sprite = new Sprite("TestSprite");
+        sprite.setRegion(region);
+
+
+        sprite.local.setPosition(0, 0).rotate(45);
+
+
+        Camera camera = new Camera("MainCamera", 800, 600);
+
+
+        Scene scene = new Scene(
                 sprite,
-                null,
-                transform,
-                0,
-                0
-        ));
+                camera,
+                true
+        );
+
 
         Renderer renderer = new Renderer(
                 gameWindow.getDrawContext(),
@@ -44,19 +60,12 @@ public class JavaFXLauncher extends Application {
         );
 
         gameWindow.setFrameListener(dt -> {
-            transform.rotate((float) dt);
 
-            drawList.clear();
+            sprite.local.rotate((float) dt);
 
-            drawList.add(new DrawCall(
-                    sprite,
-                    null,
-                    transform.copy(),
-                    0,
-                    0
-            ));
+            scene.update();
 
-            renderer.render(drawList);
+            renderer.render(scene.collectDrawList());
         });
 
         gameWindow.open();

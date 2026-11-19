@@ -1,11 +1,10 @@
+
 package it.unicam.cs.mpgc.rpg130396.core.nodes;
 
 import it.unicam.cs.mpgc.rpg130396.core.math.Rect;
 import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
 import it.unicam.cs.mpgc.rpg130396.core.rendering.DrawCall;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
-
-import java.util.ArrayList;
 
 public class DrawCollector {
 
@@ -18,11 +17,14 @@ public class DrawCollector {
         }
 
         Camera camera = scene.camera();
-        Node root = scene.root();
+        Rect cameraBounds = camera.viewRect(0);
 
-        Rect viewRect = camera.viewRect(0);
-
-        collectNode(root, camera, viewRect, drawList);
+        collectNode(
+                scene.root(),
+                camera,
+                cameraBounds,
+                drawList
+        );
 
         drawList.sort();
 
@@ -32,10 +34,9 @@ public class DrawCollector {
     private void collectNode(
             Node node,
             Camera camera,
-            Rect viewRect,
+            Rect cameraBounds,
             DrawList drawList
     ) {
-
 
         if (!node.active || !node.visible) {
             return;
@@ -43,87 +44,71 @@ public class DrawCollector {
 
         if (node instanceof Drawable drawable) {
 
-            boolean insideCamera = true;
-
-
             if (node instanceof Sprite sprite) {
+
                 TextureRegion region = sprite.getRegion();
 
-                insideCamera = region != null
-                        && intersectsCamera(
+                if (region != null && isVisible(
                         node.getWorld(),
                         region,
-                        viewRect
-                );
-            }
+                        cameraBounds
+                )) {
+                    addDrawCalls(drawable, camera, drawList);
+                }
 
-            if (insideCamera) {
-                addScreenDrawCalls(drawable, camera, drawList);
+            } else {
+                addDrawCalls(drawable, camera, drawList);
             }
         }
 
-
         for (Node child : node.getChildren()) {
-            collectNode(child, camera, viewRect, drawList);
+            collectNode(child, camera, cameraBounds, drawList);
         }
     }
 
-    private void addScreenDrawCalls(
+    private void addDrawCalls(
             Drawable drawable,
             Camera camera,
             DrawList drawList
     ) {
 
-        ArrayList<DrawCall> calls = (ArrayList<DrawCall>) drawList.getCalls();
+        DrawList temporaryList = new DrawList();
 
-        int firstNewCall = calls.size();
+        drawable.addDrawcall(temporaryList);
 
-
-        drawable.addDrawcall(drawList);
-
-
-        for (int i = firstNewCall; i < calls.size(); i++) {
-
-            DrawCall worldCall = calls.get(i);
+        for (DrawCall call : temporaryList.getCalls()) {
 
             Transform2D screenTransform =
-                    camera.toScreen(worldCall.transform2D());
+                    camera.toScreen(call.transform2D());
 
-            calls.set(i, new DrawCall(
-                    worldCall.textureRegion(),
-                    worldCall.material(),
+            drawList.add(new DrawCall(
+                    call.textureRegion(),
+                    call.material(),
                     screenTransform,
-                    worldCall.layer(),
-                    worldCall.zIndex()
+                    call.layer(),
+                    call.zIndex()
             ));
         }
     }
 
-    private boolean intersectsCamera(
+    private boolean isVisible(
             Transform2D transform,
             TextureRegion region,
-            Rect viewRect
+            Rect cameraBounds
     ) {
 
-        float pivotX = region.originX;
-        float pivotY = region.originY;
-
-        float width = region.width;
-        float height = region.height;
-
-
         float[] localX = {
-                -pivotX,
-                width - pivotX,
-                width - pivotX,
-                -pivotX
+                -region.originX,
+                region.width - region.originX,
+                region.width - region.originX,
+                -region.originX
         };
 
         float[] localY = {
-                -pivotY,
-                -pivotY,
-                height - pivotY,
-                height - pivotY
+                -region.originY,
+                -region.originY,
+                region.height - region.originY,
+                region.height - region.originY
         };
 
         float cos = (float) Math.cos(transform.rotation);
@@ -136,14 +121,11 @@ public class DrawCollector {
 
         for (int i = 0; i < 4; i++) {
 
-            float scaledX = localX[i] * transform.scale;
-            float scaledY = localY[i] * transform.scale;
+            float x = localX[i] * transform.scale;
+            float y = localY[i] * transform.scale;
 
-            float rotatedX = scaledX * cos - scaledY * sin;
-            float rotatedY = scaledX * sin + scaledY * cos;
-
-            float worldX = transform.posX + rotatedX;
-            float worldY = transform.posY + rotatedY;
+            float worldX = transform.posX + x * cos - y * sin;
+            float worldY = transform.posY + x * sin + y * cos;
 
             minX = Math.min(minX, worldX);
             minY = Math.min(minY, worldY);
@@ -151,10 +133,9 @@ public class DrawCollector {
             maxY = Math.max(maxY, worldY);
         }
 
-
-        return minX < viewRect.x() + viewRect.width()
-                && maxX > viewRect.x()
-                && minY < viewRect.y() + viewRect.height()
-                && maxY > viewRect.y();
+        return minX < cameraBounds.x() + cameraBounds.width()
+                && maxX > cameraBounds.x()
+                && minY < cameraBounds.y() + cameraBounds.height()
+                && maxY > cameraBounds.y();
     }
 }
