@@ -13,6 +13,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 public class JavaFXWindow implements Window {
 
     private final Stage stage;
@@ -25,7 +27,7 @@ public class JavaFXWindow implements Window {
     private String iconPath;
 
     public JavaFXWindow(Stage stage, String title) {
-        this.stage = stage;
+        this.stage = Objects.requireNonNull(stage);
         stage.setTitle(title);
         stage.setScene(new Scene(new Group(canvas)));
     }
@@ -54,12 +56,14 @@ public class JavaFXWindow implements Window {
     @Override public Window setTitle(String title) { stage.setTitle(title); return this; }
 
     @Override public Window setWidth(double width) {
+        requireValidDimension(width);
         canvas.setWidth(width);
         stage.sizeToScene();
         return this;
     }
 
     @Override public Window setHeight(double height) {
+        requireValidDimension(height);
         canvas.setHeight(height);
         stage.sizeToScene();
         return this;
@@ -84,4 +88,10 @@ public class JavaFXWindow implements Window {
 
     @Override public DrawContext getDrawContext()   { return drawContext; }
     @Override public RenderTarget getScreenTarget() { return screen; }
+
+    private static void requireValidDimension(double dimension) {
+        if (!(dimension >= 1 && dimension <= Integer.MAX_VALUE)) {
+            throw new IllegalArgumentException("Canvas dimension must fit the positive pixel range");
+        }
+    }
 }

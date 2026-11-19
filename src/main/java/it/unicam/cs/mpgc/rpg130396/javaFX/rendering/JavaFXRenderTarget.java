@@ -8,6 +8,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
+import java.util.Objects;
+
 public class JavaFXRenderTarget implements RenderTarget {
 
     private final Canvas canvas;
@@ -17,7 +19,11 @@ public class JavaFXRenderTarget implements RenderTarget {
 
 
     public JavaFXRenderTarget(Canvas canvas) {
-        this.canvas = canvas;
+        this.canvas = Objects.requireNonNull(canvas);
+        if (!(canvas.getWidth() >= 1 && canvas.getWidth() <= Integer.MAX_VALUE
+                && canvas.getHeight() >= 1 && canvas.getHeight() <= Integer.MAX_VALUE)) {
+            throw new IllegalArgumentException("Canvas dimensions must fit the positive pixel range");
+        }
         snapshotParameters.setFill(Color.TRANSPARENT);
     }
 

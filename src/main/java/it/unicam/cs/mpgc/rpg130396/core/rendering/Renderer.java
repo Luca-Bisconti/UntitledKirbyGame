@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+
 public class Renderer {
 
     private final DrawContext context;
@@ -31,10 +32,11 @@ public class Renderer {
     ) {
         this.context = Objects.requireNonNull(context);
         this.sceneTarget = Objects.requireNonNull(sceneTarget);
+        requirePositiveDimensions(sceneTarget);
         layerTargets = Map.of();
         composition = List.of();
         logicalWidth = 0;
-        setPipeline(bindings);
+        this.bindings = validatedPasses(bindings);
     }
 
 
@@ -77,18 +79,25 @@ public class Renderer {
         }
         composition = List.copyOf(passes);
         validateCompositionSizes();
-        setPipeline(bindings);
+        this.bindings = validatedPasses(bindings);
     }
 
     public Renderer setPipeline(List<PassBinding> bindings) {
-        this.bindings = List.copyOf(bindings);
+        this.bindings = validatedPasses(bindings);
         return this;
     }
 
-    public void render(DrawList drawList) {
+    private static List<PassBinding> validatedPasses(List<PassBinding> bindings) {
+        List<PassBinding> passes = List.copyOf(bindings);
+        validatePassSizes(passes);
+        return passes;
+    }
 
-        List<DrawCall> calls = drawList.getCalls();
+    public void render(DrawList drawList) {
+        List<DrawCall> calls = Objects.requireNonNull(drawList).getCalls();
+        validatePassSizes(bindings);
         if (composition.isEmpty()) {
+            requirePositiveDimensions(sceneTarget);
             context.setTarget(sceneTarget);
             context.clear();
             for (DrawCall call : calls) {
@@ -122,10 +131,13 @@ public class Renderer {
 
             float scale = (float) target.width() / logicalWidth;
             for (DrawCall call : callsByLayer.getOrDefault(entry.getKey(), List.of())) {
-                Transform2D transform = call.transform2D().copy();
-                transform.posX *= scale;
-                transform.posY *= scale;
-                transform.scale *= scale;
+                Transform2D transform = call.transform2D();
+                if (scale != 1f) {
+                    transform = new Transform2D(
+                            transform.posX() * scale, transform.posY() * scale,
+                            transform.rotation(), transform.scale() * scale
+                    );
+                }
                 context.drawTexture(call.textureRegion(), transform);
             }
         }
@@ -142,6 +154,19 @@ public class Renderer {
     private static void requireAspectRatio(int width, int height) {
         if (width <= 0 || height <= 0 || width * 9L != height * 16L) {
             throw new IllegalArgumentException("Expected positive 16:9 dimensions, got " + width + "x" + height);
+        }
+    }
+
+    private static void validatePassSizes(List<PassBinding> passes) {
+        for (PassBinding binding : passes) {
+            requirePositiveDimensions(binding.input());
+            requirePositiveDimensions(binding.output());
+        }
+    }
+
+    private static void requirePositiveDimensions(RenderTarget target) {
+        if (target.width() <= 0 || target.height() <= 0) {
+            throw new IllegalArgumentException("Render target dimensions must be positive");
         }
     }
 

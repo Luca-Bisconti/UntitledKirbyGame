@@ -1,71 +1,53 @@
 package it.unicam.cs.mpgc.rpg130396.core.math;
 
-public class Transform2D {
 
-    public float posX, posY;
-    public float rotation;
-    public float scale;
+public record Transform2D(float posX, float posY, float rotation, float scale) {
 
-    public Transform2D() {
-        posX = 0;
-        posY = 0;
-        rotation = 0;
-        scale = 1;
+    public Transform2D {
+        if (!Float.isFinite(posX) || !Float.isFinite(posY) || !Float.isFinite(rotation)) {
+            throw new IllegalArgumentException("Position and rotation must be finite");
+        }
+        if (!Float.isFinite(scale) || scale <= 0) {
+            throw new IllegalArgumentException("Scale must be finite and positive");
+        }
     }
 
-    public Transform2D setPosition(float x, float y) {
-        this.posX = x;
-        this.posY = y;
-        return this;
+    public Transform2D() {
+        this(0, 0, 0, 1);
+    }
+
+    public Transform2D withPosition(float x, float y) {
+        return new Transform2D(x, y, rotation, scale);
     }
 
     public Transform2D translate(float dx, float dy) {
-        this.posX += dx;
-        this.posY += dy;
-        return this;
+        return withPosition(posX + dx, posY + dy);
     }
 
-    public Transform2D rotate(float rotation){
-        this.rotation += rotation;
-        return  this;
+    public Transform2D withRotation(float radians) {
+        return new Transform2D(posX, posY, radians, scale);
     }
 
-    public Transform2D setRotation(float rotation) {
-        this.rotation = rotation;
-        return this;
+    public Transform2D rotate(float radians) {
+        return withRotation(rotation + radians);
     }
 
-
-    public Transform2D set(Transform2D t){
-        posX = t.posX;
-        posY = t.posY;
-
-        rotation = t.rotation;
-        scale = t.scale;
-
-        return this;
+    public Transform2D withScale(float factor) {
+        return new Transform2D(posX, posY, rotation, factor);
     }
 
-    public Transform2D copy() { return new Transform2D().set(this); }
-
-    public static void compose(Transform2D p, Transform2D l, Transform2D out) {
-        float cos = (float) Math.cos(p.rotation);   
-        float sin = (float) Math.sin(p.rotation);
-
-
-        float x = l.posX * p.scale;
-        float y = l.posY * p.scale;
-
-
-        float rx = x * cos - y * sin;
-        float ry = x * sin + y * cos;
-
-
-        out.posX = p.posX + rx;
-        out.posY = p.posY + ry;
-
-        out.rotation = p.rotation + l.rotation;
-        out.scale    = p.scale * l.scale;
+    public static Transform2D compose(Transform2D parent, Transform2D local) {
+        float cos = (float) Math.cos(parent.rotation);
+        float sin = (float) Math.sin(parent.rotation);
+        float x = local.posX * parent.scale;
+        float y = local.posY * parent.scale;
+        float rotatedX = x * cos - y * sin;
+        float rotatedY = x * sin + y * cos;
+        return new Transform2D(
+                parent.posX + rotatedX,
+                parent.posY + rotatedY,
+                parent.rotation + local.rotation,
+                parent.scale * local.scale
+        );
     }
-
 }

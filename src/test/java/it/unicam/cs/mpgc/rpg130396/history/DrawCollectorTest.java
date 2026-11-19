@@ -21,7 +21,7 @@ class DrawCollectorTest {
         var root = new Node("root") {};
         var inside = new Sprite("inside").setRegion(new TextureRegion(texture));
         var outside = new Sprite("outside").setRegion(new TextureRegion(texture));
-        outside.local.setPosition(200, 0);
+        outside.setLocal(outside.getLocal().withPosition(200, 0));
         root.addChild(inside);
         root.addChild(outside);
         var camera = new Camera("camera", 100, 50);

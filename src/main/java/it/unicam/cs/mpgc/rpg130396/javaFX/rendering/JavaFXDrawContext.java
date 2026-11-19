@@ -66,25 +66,25 @@ public class JavaFXDrawContext implements DrawContext {
             );
         }
 
-        float width = region.width;
-        float height = region.height;
+        float width = region.width();
+        float height = region.height();
 
         gc.save();
 
-        gc.translate(transform.posX, transform.posY);
-        gc.rotate(Math.toDegrees(transform.rotation));
-        gc.scale(transform.scale, transform.scale);
+        gc.translate(transform.posX(), transform.posY());
+        gc.rotate(Math.toDegrees(transform.rotation()));
+        gc.scale(transform.scale(), transform.scale());
 
         gc.drawImage(
                 javaFXTexture.image(),
 
-                region.posX,
-                region.posY,
+                region.posX(),
+                region.posY(),
                 width,
                 height,
 
-                -region.originX,
-                -region.originY,
+                -(float) region.originX(),
+                -(float) region.originY(),
                 width,
                 height
         );

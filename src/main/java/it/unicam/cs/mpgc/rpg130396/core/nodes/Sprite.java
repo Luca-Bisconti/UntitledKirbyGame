@@ -29,7 +29,7 @@ public class Sprite extends Node implements Drawable {
 
         out.add(new DrawCall(
                 region,
-                getWorld().copy(),
+                getWorld(),
                 layer,
                 zIndex
         ));

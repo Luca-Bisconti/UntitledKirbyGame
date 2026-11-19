@@ -97,21 +97,21 @@ public class DrawCollector {
     ) {
 
         float[] localX = {
-                -region.originX,
-                region.width - region.originX,
-                region.width - region.originX,
-                -region.originX
+                -(float) region.originX(),
+                (float) region.width() - region.originX(),
+                (float) region.width() - region.originX(),
+                -(float) region.originX()
         };
 
         float[] localY = {
-                -region.originY,
-                -region.originY,
-                region.height - region.originY,
-                region.height - region.originY
+                -(float) region.originY(),
+                -(float) region.originY(),
+                (float) region.height() - region.originY(),
+                (float) region.height() - region.originY()
         };
 
-        float cos = (float) Math.cos(transform.rotation);
-        float sin = (float) Math.sin(transform.rotation);
+        float cos = (float) Math.cos(transform.rotation());
+        float sin = (float) Math.sin(transform.rotation());
 
         float minX = Float.POSITIVE_INFINITY;
         float minY = Float.POSITIVE_INFINITY;
@@ -120,11 +120,11 @@ public class DrawCollector {
 
         for (int i = 0; i < 4; i++) {
 
-            float x = localX[i] * transform.scale;
-            float y = localY[i] * transform.scale;
+            float x = localX[i] * transform.scale();
+            float y = localY[i] * transform.scale();
 
-            float worldX = transform.posX + x * cos - y * sin;
-            float worldY = transform.posY + x * sin + y * cos;
+            float worldX = transform.posX() + x * cos - y * sin;
+            float worldY = transform.posY() + x * sin + y * cos;
 
             minX = Math.min(minX, worldX);
             minY = Math.min(minY, worldY);

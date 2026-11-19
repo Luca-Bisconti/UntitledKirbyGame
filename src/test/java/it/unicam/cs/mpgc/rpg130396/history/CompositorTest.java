@@ -32,6 +32,6 @@ class CompositorTest {
         };
         new Compositor().render(context, input, new RenderTestSupport.Target(160, 90));
         assertEquals(1, transforms.size());
-        assertEquals(2f, transforms.getFirst().scale);
+        assertEquals(2f, transforms.getFirst().scale());
     }
 }

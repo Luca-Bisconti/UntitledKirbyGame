@@ -20,10 +20,8 @@ public abstract class Node {
     private final List<Component> components = new ArrayList<>();
 
 
-    public final Transform2D local = new Transform2D();
-
-    private final Transform2D world = new Transform2D();
-    private boolean worldDirty = true;
+    private Transform2D local = new Transform2D();
+    private Transform2D world;
 
 
     public boolean visible = true;
@@ -105,7 +103,7 @@ public abstract class Node {
 
     private void markDirty() {
 
-        worldDirty = true;
+        world = null;
 
 
         for (Node child : children) {
@@ -113,23 +111,20 @@ public abstract class Node {
         }
     }
 
-    public Transform2D getWorld() {
+    public final Transform2D getLocal() {
+        return local;
+    }
 
-        if (worldDirty) {
+    public final void setLocal(Transform2D transform) {
+        local = Objects.requireNonNull(transform);
+        markDirty();
+    }
 
-            if (parent == null) {
-                world.set(local);
-            } else {
-                Transform2D.compose(
-                        parent.getWorld(),
-                        local,
-                        world
-                );
-            }
 
-            worldDirty = false;
+    public final Transform2D getWorld() {
+        if (world == null) {
+            world = parent == null ? local : Transform2D.compose(parent.getWorld(), local);
         }
-
         return world;
     }
 
@@ -148,7 +143,7 @@ public abstract class Node {
     }
 
     public <T> List<T> getComp(Class<T> componentClass) {
-
+        Objects.requireNonNull(componentClass);
         List<T> result = new ArrayList<>();
 
         for (Component component : components) {

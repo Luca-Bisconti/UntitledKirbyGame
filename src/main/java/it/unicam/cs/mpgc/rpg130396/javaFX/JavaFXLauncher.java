@@ -1,6 +1,7 @@
 
 package it.unicam.cs.mpgc.rpg130396.javaFX;
 
+import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Camera;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Sprite;
@@ -34,16 +35,15 @@ public class JavaFXLauncher extends Application {
         ).setWidth(1920).setHeight(1080).setResizable(false);
 
         Sprite background = solidSprite("Background", 0, LOGICAL_WIDTH, LOGICAL_HEIGHT, 0xFF334C79);
-        background.local.setPosition(-LOGICAL_WIDTH / 2f, -LOGICAL_HEIGHT / 2f);
+        background.setLocal(background.getLocal().withPosition(-LOGICAL_WIDTH / 2f, -LOGICAL_HEIGHT / 2f));
 
         Sprite ground = solidSprite("Ground", 1, LOGICAL_WIDTH, 32, 0xFF517A58);
-        ground.local.setPosition(0, LOGICAL_HEIGHT - 32);
+        ground.setLocal(ground.getLocal().withPosition(0, LOGICAL_HEIGHT - 32));
         background.addChild(ground);
 
         Sprite character = solidSprite("Character", 2, 30, 22, 0xCCFF83B3);
-        character.getRegion().originX = 15;
-        character.getRegion().originY = 11;
-        character.local.setPosition(120, 101).rotate((float) Math.toRadians(30));
+        character.getRegion().setOrigin(15, 11);
+        character.setLocal(new Transform2D(120, 101, (float) Math.toRadians(30), 1));
         background.addChild(character);
 
         Camera camera = new Camera("MainCamera", LOGICAL_WIDTH, LOGICAL_HEIGHT);
