@@ -65,10 +65,8 @@ public final class DemoSceneFactory {
                 -horizontalLimit, horizontalLimit, playerGroundY));
         character.addComponent(animator);
         Camera camera = new Camera("MainCamera", WIDTH, HEIGHT);
-        camera.addComponent(new CameraFollowComponent(camera, character, 0, -worldHalfWidth, worldHalfWidth));
-
-
-        root.addChild(character);
+        CameraFollowComponent follow = new CameraFollowComponent(camera, character, 0, -worldHalfWidth, worldHalfWidth);
+        camera.addComponent(follow);
         root.addChild(camera);
         for (int i = 0; i < planes.size(); i++) {
             Background plane = planes.get(i);
@@ -78,9 +76,12 @@ public final class DemoSceneFactory {
             background.setZIndex(i);
             background.setLocal(background.getLocal().withPosition(-texture.width() / 2f, -HEIGHT / 2f));
             root.addChild(background);
-            background.addComponent(new ParallaxComponent(background, camera, plane.factor()));
+            ParallaxComponent parallax = new ParallaxComponent(background, camera, plane.factor());
+            background.addComponent(parallax);
+            follow.addParallax(parallax);
         }
         root.addChild(ground);
+        root.addChild(character);
         return new Scene(root, camera, true);
     }
 }

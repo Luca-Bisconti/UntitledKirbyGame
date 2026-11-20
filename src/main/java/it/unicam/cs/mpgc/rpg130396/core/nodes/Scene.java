@@ -46,6 +46,7 @@ public class Scene {
         Updatable.requireValidDeltaTime(dt);
         if (isActive) {
             root.update(dt);
+            root.postUpdate(dt);
         }
     }
 }

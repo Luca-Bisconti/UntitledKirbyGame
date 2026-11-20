@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg130396.core.nodes;
 import java.util.Objects;
 
 
-public final class ParallaxComponent implements Updatable {
+public final class ParallaxComponent implements Component {
 
     private final Node background;
     private final Camera camera;
@@ -23,9 +23,18 @@ public final class ParallaxComponent implements Updatable {
         initialCameraX = camera.getWorld().posX();
     }
 
-    @Override
+    boolean usesCamera(Camera camera) {
+        return this.camera == camera;
+    }
+
+
     public void update(double dt) {
         Updatable.requireValidDeltaTime(dt);
+        for (Node node = background; node != null; node = node.getParent()) {
+            if (!node.isActive()) {
+                return;
+            }
+        }
         double cameraDisplacement = (double) camera.getWorld().posX() - initialCameraX;
         background.setWorldX((float) (initialBackgroundX + (1.0 - factor) * cameraDisplacement));
     }

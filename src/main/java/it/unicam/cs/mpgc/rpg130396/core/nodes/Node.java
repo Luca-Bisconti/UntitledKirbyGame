@@ -259,10 +259,11 @@ public abstract class Node {
         }
 
 
-        forEachComp(
-                Updatable.class,
-                component -> component.update(dt)
-        );
+        for (Updatable component : getComp(Updatable.class)) {
+            if (!(component instanceof PostUpdatable)) {
+                component.update(dt);
+            }
+        }
 
 
         List<Node> childrenSnapshot = new ArrayList<>(children);
@@ -271,6 +272,19 @@ public abstract class Node {
 
             if (child.parent == this) {
                 child.update(dt);
+            }
+        }
+    }
+
+    final void postUpdate(double dt) {
+        if (!active) {
+            return;
+        }
+
+        forEachComp(PostUpdatable.class, component -> component.postUpdate(dt));
+        for (Node child : new ArrayList<>(children)) {
+            if (child.parent == this) {
+                child.postUpdate(dt);
             }
         }
     }

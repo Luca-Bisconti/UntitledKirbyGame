@@ -15,7 +15,7 @@ class CameraFollowComponentTest {
         var player = new Node("player") {};
         player.setLocal(player.getLocal().withPosition(500, 0));
         var follow = new CameraFollowComponent(camera, player, 0, 0, 300);
-        follow.update(0);
+        follow.postUpdate(0);
         assertEquals(200f, camera.viewRect(0).x());
     }
 }
