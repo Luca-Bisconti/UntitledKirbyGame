@@ -12,7 +12,7 @@ public class DrawCollector {
 
         DrawList drawList = new DrawList();
 
-        if (scene == null || !scene.isActive) {
+        if (scene == null || !scene.isActive()) {
             return drawList;
         }
 

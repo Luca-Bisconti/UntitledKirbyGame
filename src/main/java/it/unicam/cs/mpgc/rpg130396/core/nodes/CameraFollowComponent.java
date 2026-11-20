@@ -51,7 +51,7 @@ public final class CameraFollowComponent implements PostUpdatable {
                 : Math.clamp(desiredViewLeft, minViewLeft, maxViewLeft);
         camera.setWorldX((float) (viewLeft + anchorOffset));
         for (ParallaxComponent background : backgrounds) {
-            background.update(dt);
+            background.updateFromCamera(dt);
         }
     }
 }

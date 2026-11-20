@@ -23,8 +23,11 @@ final class JavaFXDemoTextures {
         graphics.fillPolygon(
                 new double[]{0, 69, 133, 217, 309, 393, 470, 553, 629, 720, 720, 0},
                 new double[]{89, 52, 83, 45, 94, 56, 81, 42, 79, 61, 135, 135}, 12);
-        graphics.setFill(Color.web("#F5DAB0"));
+        graphics.setFill(Color.web("#FFF0CA"));
         graphics.fillOval(390, 17, 19, 19);
+        graphics.fillRect(285, 22, 3, 3);
+        graphics.fillRect(338, 33, 3, 3);
+        graphics.fillRect(460, 26, 3, 3);
         return snapshot(canvas);
     }
 

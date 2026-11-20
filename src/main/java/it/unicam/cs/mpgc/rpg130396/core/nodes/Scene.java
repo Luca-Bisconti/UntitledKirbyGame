@@ -11,7 +11,7 @@ public class Scene {
     private final Camera camera;
     private final DrawCollector drawCollector;
 
-    public boolean isActive;
+    private boolean isActive;
 
     public Scene(Node root, Camera camera, boolean isActive) {
         this.root = Objects.requireNonNull(root);
@@ -26,6 +26,14 @@ public class Scene {
 
     public Camera camera() {
         return camera;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
     }
 
     public DrawList collectDrawList() {

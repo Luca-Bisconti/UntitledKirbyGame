@@ -10,6 +10,7 @@ import it.unicam.cs.mpgc.rpg130396.core.rendering.Renderer;
 import it.unicam.cs.mpgc.rpg130396.core.window.Window;
 import it.unicam.cs.mpgc.rpg130396.game.DemoSceneFactory;
 import it.unicam.cs.mpgc.rpg130396.javaFX.Input.JavaFXInputAdapter;
+import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXBloomPass;
 import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXRenderTarget;
 import it.unicam.cs.mpgc.rpg130396.javaFX.window.JavaFXWindow;
 
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class JavaFXLauncher extends Application {
+
+    private static final boolean BACKGROUND_BLOOM_ENABLED = true;
 
     private GameLoop gameLoop;
 
@@ -57,9 +60,11 @@ public class JavaFXLauncher extends Application {
 
     private static Renderer createRenderer(Window window) {
         RenderTarget backgroundTarget = new JavaFXRenderTarget(640, 360);
+        RenderTarget bloomTarget = new JavaFXRenderTarget(backgroundTarget.width(), backgroundTarget.height());
         RenderTarget groundTarget = new JavaFXRenderTarget(DemoSceneFactory.WIDTH, DemoSceneFactory.HEIGHT);
         RenderTarget characterTarget = new JavaFXRenderTarget(DemoSceneFactory.WIDTH, DemoSceneFactory.HEIGHT);
         RenderTarget screenTarget = window.getScreenTarget();
+        JavaFXBloomPass bloom = new JavaFXBloomPass(0.78, 8, 0.65, BACKGROUND_BLOOM_ENABLED);
         Compositor compositor = new Compositor();
         return new Renderer(
                 window.getDrawContext(),
@@ -68,7 +73,8 @@ public class JavaFXLauncher extends Application {
                 DemoSceneFactory.WIDTH,
                 DemoSceneFactory.HEIGHT,
                 List.of(
-                        new PassBinding(compositor, backgroundTarget, screenTarget, true),
+                        new PassBinding(bloom, backgroundTarget, bloomTarget, true),
+                        new PassBinding(compositor, bloomTarget, screenTarget, true),
                         new PassBinding(compositor, groundTarget, screenTarget, false),
                         new PassBinding(compositor, characterTarget, screenTarget, false)
                 )

@@ -15,7 +15,7 @@ class ParallaxComponentTest {
         background.setLocal(background.getLocal().withPosition(10, 4));
         var parallax = new ParallaxComponent(background, camera, 0.25f);
         camera.setLocal(camera.getLocal().withPosition(80, 0));
-        parallax.update(0);
+        parallax.updateFromCamera(0);
         assertEquals(70f, background.getWorld().posX());
         assertEquals(4f, background.getWorld().posY());
     }

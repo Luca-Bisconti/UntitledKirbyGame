@@ -28,7 +28,7 @@ public final class ParallaxComponent implements Component {
     }
 
 
-    public void update(double dt) {
+    public void updateFromCamera(double dt) {
         Updatable.requireValidDeltaTime(dt);
         for (Node node = background; node != null; node = node.getParent()) {
             if (!node.isActive()) {
