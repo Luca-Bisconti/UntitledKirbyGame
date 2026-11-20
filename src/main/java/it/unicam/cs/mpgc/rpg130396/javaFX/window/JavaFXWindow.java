@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.Objects;
 
@@ -30,10 +31,19 @@ public class JavaFXWindow implements Window {
         this.stage = Objects.requireNonNull(stage);
         stage.setTitle(title);
         stage.setScene(new Scene(new Group(canvas)));
+        stage.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
+            if (loop != null) {
+                loop.stop();
+                loop = null;
+            }
+        });
     }
 
     @Override
     public void open() {
+        if (loop != null) {
+            return;
+        }
         stage.show();
         loop = new AnimationTimer() {
             private long last = 0;
@@ -48,7 +58,6 @@ public class JavaFXWindow implements Window {
 
     @Override
     public void close() {
-        if (loop != null) loop.stop();
         stage.close();
     }
 
