@@ -161,6 +161,28 @@ public abstract class Node {
     }
 
 
+    final void setWorldX(float x) {
+        Transform2D world = getWorld();
+        if (world.posX() == x) {
+            return;
+        }
+        if (parent == null) {
+            setLocal(local.withPosition(x, local.posY()));
+            return;
+        }
+
+        Transform2D parentWorld = parent.getWorld();
+        double dx = ((double) x - parentWorld.posX()) / parentWorld.scale();
+        double dy = ((double) world.posY() - parentWorld.posY()) / parentWorld.scale();
+        double cos = Math.cos(parentWorld.rotation());
+        double sin = Math.sin(parentWorld.rotation());
+        setLocal(local.withPosition(
+                (float) (dx * cos + dy * sin),
+                (float) (-dx * sin + dy * cos)
+        ));
+    }
+
+
 
 
 

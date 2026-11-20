@@ -37,7 +37,10 @@ public class JavaFXLauncher extends Application {
         });
 
         Scene scene = new DemoSceneFactory().create(
-                JavaFXDemoTextures.createBackground(),
+                List.of(
+                        new DemoSceneFactory.Background(JavaFXDemoTextures.createDistantBackground(), 0.2f),
+                        new DemoSceneFactory.Background(JavaFXDemoTextures.createNearBackground(), 0.6f)
+                ),
                 JavaFXDemoTextures.createGround(),
                 JavaFXDemoTextures.createDemoAtlas()
         );
