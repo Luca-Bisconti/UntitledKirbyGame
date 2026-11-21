@@ -24,7 +24,6 @@ public interface Window {
     public String getIconFilePath();
 
 
-    public Window setFrameListener(FrameListener listener);
     public DrawContext getDrawContext();
     public RenderTarget getScreenTarget();
 }

@@ -1,24 +1,49 @@
 package it.unicam.cs.mpgc.rpg130396.javaFX;
 
 import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAtlas;
+import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAnimation;
 import it.unicam.cs.mpgc.rpg130396.core.resources.Texture;
-import it.unicam.cs.mpgc.rpg130396.game.DemoSceneFactory;
+import it.unicam.cs.mpgc.rpg130396.game.DemoAssets;
 import it.unicam.cs.mpgc.rpg130396.javaFX.resources.JavaFXTexture;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+
+import static it.unicam.cs.mpgc.rpg130396.game.DemoConfig.*;
+
 
 final class JavaFXDemoTextures {
 
     private JavaFXDemoTextures() {}
 
-    static Texture createDistantBackground() {
-        Canvas canvas = new Canvas(DemoSceneFactory.WORLD_WIDTH, DemoSceneFactory.HEIGHT);
+    private static final int ART_WIDTH = 720;
+    private static final int ART_HEIGHT = 135;
+
+    static DemoAssets create() {
+        SpriteAtlas atlas = createDemoAtlas();
+        SpriteAnimation idle = new SpriteAnimation(List.of(atlas.frame(0)), 0.125, true);
+        SpriteAnimation walk = new SpriteAnimation(
+                List.of(atlas.frame(0), atlas.frame(1), atlas.frame(2), atlas.frame(1)), 0.125, true);
+        return new DemoAssets(List.of(
+                new DemoAssets.Background("DistantBackground", createDistantBackground(), 0, 0, 0.2f, true),
+                new DemoAssets.Background("NearBackground", createNearBackground(), 0, 0, 0.6f, true)
+        ), createBridge(), idle, walk, null);
+    }
+
+    private static Canvas backgroundCanvas() {
+        Canvas canvas = new Canvas(WORLD_WIDTH, LOGICAL_HEIGHT);
+        canvas.getGraphicsContext2D().scale(WORLD_WIDTH / ART_WIDTH, (double) LOGICAL_HEIGHT / ART_HEIGHT);
+        return canvas;
+    }
+
+    private static Texture createDistantBackground() {
+        Canvas canvas = backgroundCanvas();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         graphics.setFill(Color.web("#334C79"));
-        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        graphics.fillRect(0, 0, ART_WIDTH, ART_HEIGHT);
         graphics.setFill(Color.web("#667DA3"));
         graphics.fillPolygon(
                 new double[]{0, 69, 133, 217, 309, 393, 470, 553, 629, 720, 720, 0},
@@ -31,8 +56,8 @@ final class JavaFXDemoTextures {
         return snapshot(canvas);
     }
 
-    static Texture createNearBackground() {
-        Canvas canvas = new Canvas(DemoSceneFactory.WORLD_WIDTH, DemoSceneFactory.HEIGHT);
+    private static Texture createNearBackground() {
+        Canvas canvas = backgroundCanvas();
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         graphics.setFill(Color.web("#355C60"));
         graphics.fillPolygon(
@@ -41,25 +66,25 @@ final class JavaFXDemoTextures {
         return snapshot(canvas);
     }
 
-    static Texture createGround() {
-        Canvas canvas = new Canvas(DemoSceneFactory.WORLD_WIDTH, 32);
+    private static Texture createBridge() {
+        Canvas canvas = new Canvas(BRIDGE_TEXTURE_WIDTH, BRIDGE_TEXTURE_HEIGHT);
         GraphicsContext graphics = canvas.getGraphicsContext2D();
         graphics.setFill(Color.web("#517A58"));
-        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        graphics.fillRect(0, BRIDGE_WALKABLE_Y, BRIDGE_TEXTURE_WIDTH, BRIDGE_TEXTURE_HEIGHT - BRIDGE_WALKABLE_Y);
         graphics.setFill(Color.web("#89AC69"));
-        graphics.fillRect(0, 0, canvas.getWidth(), 3);
+        graphics.fillRect(0, BRIDGE_WALKABLE_Y, BRIDGE_TEXTURE_WIDTH, 3);
         graphics.setFill(Color.web("#3D6249"));
-        for (int x = 12; x < DemoSceneFactory.WORLD_WIDTH; x += 32) {
-            graphics.fillRect(x, 10, 8, 3);
+        for (int x = 12; x < BRIDGE_TEXTURE_WIDTH; x += 32) {
+            graphics.fillRect(x, BRIDGE_WALKABLE_Y + 10, 8, 3);
         }
         return snapshot(canvas);
     }
 
-    static SpriteAtlas createDemoAtlas() {
+    private static SpriteAtlas createDemoAtlas() {
         int cellWidth = 30;
         int cellHeight = 22;
         int pivotX = cellWidth / 2;
-        int pivotY = cellHeight / 2;
+        int feetY = 20;
         int frameCount = 3;
         Canvas canvas = new Canvas(cellWidth * frameCount, cellHeight);
         GraphicsContext graphics = canvas.getGraphicsContext2D();
@@ -67,15 +92,16 @@ final class JavaFXDemoTextures {
             int centerX = frame * cellWidth + pivotX;
             int halfWidth = 9 + frame * 2;
             int halfHeight = 9 - frame * 2;
+            int centerY = feetY - halfHeight;
             graphics.setFill(Color.rgb(255, 131, 179, 0.8));
             graphics.fillPolygon(
                     new double[]{centerX, centerX + halfWidth, centerX, centerX - halfWidth},
-                    new double[]{pivotY - halfHeight, pivotY, pivotY + halfHeight, pivotY}, 4);
+                    new double[]{centerY - halfHeight, centerY, feetY, centerY}, 4);
             graphics.setFill(Color.rgb(255, 226, 238));
-            graphics.fillRect(centerX - 2, pivotY - 2, 4, 4);
+            graphics.fillRect(centerX - 2, centerY - 2, 4, 4);
         }
 
-        return new SpriteAtlas(snapshot(canvas), cellWidth, cellHeight, pivotX, pivotY);
+        return new SpriteAtlas(snapshot(canvas), cellWidth, cellHeight, pivotX, feetY);
     }
 
     private static Texture snapshot(Canvas canvas) {

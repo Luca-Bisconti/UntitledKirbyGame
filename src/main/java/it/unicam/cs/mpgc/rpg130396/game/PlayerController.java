@@ -23,6 +23,7 @@ public final class PlayerController implements InputHandler, Updatable {
     private final SpriteAnimator animator;
     private final SpriteAnimation idle;
     private final SpriteAnimation walk;
+    private final SpriteAnimation crouchAnimation;
     private final float minX;
     private final float maxX;
     private final float groundY;
@@ -38,11 +39,13 @@ public final class PlayerController implements InputHandler, Updatable {
 
 
     public PlayerController(Node player, SpriteAnimator animator, SpriteAnimation idle,
-                            SpriteAnimation walk, float minX, float maxX, float groundY) {
+                            SpriteAnimation walk, SpriteAnimation crouchAnimation,
+                            float minX, float maxX, float groundY) {
         this.player = Objects.requireNonNull(player);
         this.animator = Objects.requireNonNull(animator);
         this.idle = Objects.requireNonNull(idle);
         this.walk = Objects.requireNonNull(walk);
+        this.crouchAnimation = Objects.requireNonNull(crouchAnimation);
         this.minX = minX;
         this.maxX = maxX;
         this.groundY = groundY;
@@ -105,7 +108,11 @@ public final class PlayerController implements InputHandler, Updatable {
             pose = PlayerPose.IDLE;
         }
 
-        SpriteAnimation animation = pose == PlayerPose.WALK ? walk : idle;
+        SpriteAnimation animation = switch (pose) {
+            case WALK -> walk;
+            case CROUCH -> crouchAnimation;
+            case IDLE, LOOK_UP, JUMP -> idle;
+        };
         if (animation != currentAnimation) {
             animator.play(animation);
             currentAnimation = animation;

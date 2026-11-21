@@ -8,80 +8,92 @@ import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Sprite;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.SpriteAnimator;
 import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAnimation;
-import it.unicam.cs.mpgc.rpg130396.core.resources.SpriteAtlas;
-import it.unicam.cs.mpgc.rpg130396.core.resources.Texture;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 
 import java.util.List;
-import java.util.Objects;
+
+import static it.unicam.cs.mpgc.rpg130396.game.DemoConfig.*;
 
 
 public final class DemoSceneFactory {
 
-    public static final int WIDTH = 240;
-    public static final int HEIGHT = 135;
-    public static final int WORLD_WIDTH = 720;
-
-    private static final int CHARACTER_HALF_WIDTH = 13;
-    private static final int CHARACTER_FOOT_OFFSET = 9;
-
-    public record Background(Texture texture, float factor) {
-        public Background {
-            Objects.requireNonNull(texture);
-            if (!Float.isFinite(factor)) {
-                throw new IllegalArgumentException("Parallax factor must be finite");
-            }
-            double requiredWidth = WIDTH + Math.abs((double) factor) * (WORLD_WIDTH - WIDTH);
-            if (texture.width() < requiredWidth || texture.height() < HEIGHT) {
-                throw new IllegalArgumentException("Background texture must cover the full camera travel");
-            }
+    public Scene create(DemoAssets assets) {
+        if (assets.bridge().width() != BRIDGE_TEXTURE_WIDTH
+                || assets.bridge().height() != BRIDGE_TEXTURE_HEIGHT) {
+            throw new IllegalArgumentException("Expected a bridge texture of "
+                    + BRIDGE_TEXTURE_WIDTH + "x" + BRIDGE_TEXTURE_HEIGHT);
         }
-    }
-
-
-    public Scene create(List<Background> backgrounds, Texture groundTexture, SpriteAtlas atlas) {
-        List<Background> planes = List.copyOf(backgrounds);
-        Objects.requireNonNull(groundTexture);
-        Objects.requireNonNull(atlas);
 
         Node root = new Node("Root") {};
-        float worldHalfWidth = WORLD_WIDTH / 2f;
-
-        float groundTop = HEIGHT / 2f - groundTexture.height();
-        Sprite ground = new Sprite("Ground").setRegion(new TextureRegion(groundTexture));
-        ground.setLayer(1);
-        ground.setLocal(ground.getLocal().withPosition(-worldHalfWidth, groundTop));
-
-        Sprite character = new Sprite("Character");
-        character.setLayer(2);
-        float playerGroundY = groundTop - CHARACTER_FOOT_OFFSET;
-        character.setLocal(character.getLocal().withPosition(0, playerGroundY));
-        SpriteAnimator animator = new SpriteAnimator(character);
-        SpriteAnimation idle = new SpriteAnimation(List.of(atlas.frame(0)), 0.125, true);
-        SpriteAnimation walk = new SpriteAnimation(
-                List.of(atlas.frame(0), atlas.frame(1), atlas.frame(2), atlas.frame(1)), 0.125, true);
-        float horizontalLimit = worldHalfWidth - CHARACTER_HALF_WIDTH;
-        character.addComponent(new PlayerController(character, animator, idle, walk,
-                -horizontalLimit, horizontalLimit, playerGroundY));
-        character.addComponent(animator);
-        Camera camera = new Camera("MainCamera", WIDTH, HEIGHT);
-        CameraFollowComponent follow = new CameraFollowComponent(camera, character, 0, -worldHalfWidth, worldHalfWidth);
-        camera.addComponent(follow);
+        Camera camera = new Camera("MainCamera", LOGICAL_WIDTH, LOGICAL_HEIGHT);
+        Node backgrounds = new Node("Backgrounds") {};
+        Node environment = new Node("Environment") {};
+        Sprite kirby = new Sprite("Kirby");
         root.addChild(camera);
-        for (int i = 0; i < planes.size(); i++) {
-            Background plane = planes.get(i);
-            Texture texture = plane.texture();
-            Sprite background = new Sprite("Background " + (i + 1)).setRegion(new TextureRegion(texture));
+        root.addChild(backgrounds);
+        root.addChild(environment);
+        root.addChild(kirby);
+
+        kirby.setLayer(2);
+        kirby.setLocal(kirby.getLocal().withPosition(0, GROUND_Y));
+        SpriteAnimator animator = new SpriteAnimator(kirby);
+        float margin = playerMargin(assets);
+        kirby.addComponent(new PlayerController(kirby, animator, assets.idle(), assets.walk(), assets.crouch(),
+                WORLD_MIN_X + margin, WORLD_MAX_X - margin, GROUND_Y));
+        kirby.addComponent(animator);
+
+        CameraFollowComponent follow = new CameraFollowComponent(camera, kirby, 0, WORLD_MIN_X, WORLD_MAX_X);
+        camera.addComponent(follow);
+
+        for (int i = 0; i < assets.backgrounds().size(); i++) {
+            DemoAssets.Background plane = assets.backgrounds().get(i);
+            validateCoverage(plane);
+            Sprite background = new Sprite(plane.name()).setRegion(new TextureRegion(plane.texture()));
             background.setLayer(0);
             background.setZIndex(i);
-            background.setLocal(background.getLocal().withPosition(-texture.width() / 2f, -HEIGHT / 2f));
-            root.addChild(background);
+            background.setLocal(background.getLocal().withPosition(
+                    plane.centerX() - plane.texture().width() / 2f, plane.centerY() - plane.texture().height() / 2f));
+            backgrounds.addChild(background);
             ParallaxComponent parallax = new ParallaxComponent(background, camera, plane.factor());
             background.addComponent(parallax);
             follow.addParallax(parallax);
         }
-        root.addChild(ground);
-        root.addChild(character);
+
+        for (int i = 0; i < BRIDGE_SEGMENTS; i++) {
+            TextureRegion region = new TextureRegion(assets.bridge()).setOrigin(0, BRIDGE_WALKABLE_Y);
+            Sprite bridge = new Sprite("Bridge_" + i).setRegion(region);
+            bridge.setLayer(1);
+            bridge.setLocal(bridge.getLocal().withPosition(WORLD_MIN_X + i * SEGMENT_WORLD_WIDTH, GROUND_Y)
+                    .withScale(BRIDGE_SCALE));
+            environment.addChild(bridge);
+        }
+
         return new Scene(root, camera, true);
+    }
+
+    private static void validateCoverage(DemoAssets.Background plane) {
+        if (!plane.coversViewport()) {
+            return;
+        }
+        double requiredWidth = LOGICAL_WIDTH + Math.abs((double) plane.factor()) * (WORLD_WIDTH - LOGICAL_WIDTH)
+                + 2.0 * Math.abs(plane.centerX());
+        double requiredHeight = LOGICAL_HEIGHT + 2.0 * Math.abs(plane.centerY());
+        if (plane.texture().width() < requiredWidth || plane.texture().height() < requiredHeight) {
+            throw new IllegalArgumentException(plane.name() + " must cover the viewport across camera travel (at least "
+                    + (int) Math.ceil(requiredWidth) + "x" + (int) Math.ceil(requiredHeight) + ")");
+        }
+    }
+
+    private static float playerMargin(DemoAssets assets) {
+        float margin = 0;
+        for (SpriteAnimation animation : List.of(assets.idle(), assets.walk(), assets.crouch())) {
+            for (TextureRegion frame : animation.frames()) {
+                margin = Math.max(margin, Math.max(frame.originX(), (float) frame.width() - frame.originX()));
+            }
+        }
+        if (margin >= WORLD_WIDTH / 2) {
+            throw new IllegalArgumentException("Kirby frames are too wide for the bridge");
+        }
+        return margin;
     }
 }

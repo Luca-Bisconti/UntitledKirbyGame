@@ -2,17 +2,14 @@ package it.unicam.cs.mpgc.rpg130396.javaFX.window;
 
 import it.unicam.cs.mpgc.rpg130396.core.rendering.DrawContext;
 import it.unicam.cs.mpgc.rpg130396.core.rendering.RenderTarget;
-import it.unicam.cs.mpgc.rpg130396.core.window.FrameListener;
 import it.unicam.cs.mpgc.rpg130396.core.window.Window;
 import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXDrawContext;
 import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXRenderTarget;
-import javafx.animation.AnimationTimer;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 import java.util.Objects;
 
@@ -23,37 +20,17 @@ public class JavaFXWindow implements Window {
     private final JavaFXRenderTarget screen = new JavaFXRenderTarget(canvas);
     private final JavaFXDrawContext drawContext = new JavaFXDrawContext(screen);
 
-    private FrameListener listener;
-    private AnimationTimer loop;
     private String iconPath;
 
     public JavaFXWindow(Stage stage, String title) {
         this.stage = Objects.requireNonNull(stage);
         stage.setTitle(title);
         stage.setScene(new Scene(new Group(canvas)));
-        stage.addEventHandler(WindowEvent.WINDOW_HIDDEN, event -> {
-            if (loop != null) {
-                loop.stop();
-                loop = null;
-            }
-        });
     }
 
     @Override
     public void open() {
-        if (loop != null) {
-            return;
-        }
         stage.show();
-        loop = new AnimationTimer() {
-            private long last = 0;
-            @Override public void handle(long now) {
-                if (last != 0 && listener != null)
-                    listener.onFrame((now - last) / 1_000_000_000.0);
-                last = now;
-            }
-        };
-        loop.start();
     }
 
     @Override
@@ -85,8 +62,6 @@ public class JavaFXWindow implements Window {
         stage.getIcons().setAll(new Image(path));
         return this;
     }
-
-    @Override public Window setFrameListener(FrameListener l) { this.listener = l; return this; }
 
 
     @Override public String getTitle()        { return stage.getTitle(); }

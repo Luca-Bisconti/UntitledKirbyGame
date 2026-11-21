@@ -22,7 +22,7 @@ class PlayerControllerTest {
         var frame = new TextureRegion(texture);
         var clip = new SpriteAnimation(java.util.List.of(frame), 0.25, true);
         var player = new Sprite("player");
-        var controller = new PlayerController(player, new SpriteAnimator(player), clip, clip, 0, 10, 0);
+        var controller = new PlayerController(player, new SpriteAnimator(player), clip, clip, clip, 0, 10, 0);
         var input = new PolledInput();
         input.press(Action.RIGHT);
         controller.handleInput(input);
