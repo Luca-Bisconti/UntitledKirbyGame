@@ -14,6 +14,7 @@ public final class SpriteAnimator implements Updatable {
     private double position;
     private int frameIndex;
     private boolean paused;
+    private boolean flippedHorizontally;
 
     public SpriteAnimator(Sprite sprite) {
         this.sprite = Objects.requireNonNull(sprite);
@@ -26,7 +27,28 @@ public final class SpriteAnimator implements Updatable {
         position = 0;
         frameIndex = 0;
         paused = false;
-        sprite.setRegion(frames.getFirst());
+        applyFrame();
+    }
+
+    public void setFlippedHorizontally(boolean flippedHorizontally) {
+        if (this.flippedHorizontally == flippedHorizontally) {
+            return;
+        }
+        this.flippedHorizontally = flippedHorizontally;
+        if (animation != null) {
+            applyFrame();
+        }
+    }
+
+    private void applyFrame() {
+        TextureRegion frame = frames.get(frameIndex);
+        if (flippedHorizontally) {
+            frame = new TextureRegion(frame.getTexture(), frame.posX(), frame.posY(),
+                    frame.width(), frame.height())
+                    .setOrigin(frame.originX(), frame.originY())
+                    .setFlippedHorizontally(!frame.isFlippedHorizontally());
+        }
+        sprite.setRegion(frame);
     }
 
     public void pause() {
@@ -60,7 +82,7 @@ public final class SpriteAnimator implements Updatable {
         int nextFrame = (int) position;
         if (nextFrame != frameIndex) {
             frameIndex = nextFrame;
-            sprite.setRegion(frames.get(frameIndex));
+            applyFrame();
         }
     }
 }

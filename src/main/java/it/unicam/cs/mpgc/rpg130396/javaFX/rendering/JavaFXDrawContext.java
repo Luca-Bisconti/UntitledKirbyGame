@@ -75,6 +75,11 @@ public class JavaFXDrawContext implements DrawContext {
         gc.rotate(Math.toDegrees(transform.rotation()));
         gc.scale(transform.scale(), transform.scale());
 
+        if (region.isFlippedHorizontally()) {
+            gc.translate(width - 2f * region.originX(), 0);
+            gc.scale(-1, 1);
+        }
+
         gc.drawImage(
                 javaFXTexture.image(),
 

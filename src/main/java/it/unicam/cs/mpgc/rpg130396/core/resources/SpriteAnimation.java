@@ -40,7 +40,8 @@ public final class SpriteAnimation {
         return frames.stream()
                 .map(region -> new TextureRegion(region.getTexture(),
                         region.posX(), region.posY(), region.width(), region.height())
-                        .setOrigin(region.originX(), region.originY()))
+                        .setOrigin(region.originX(), region.originY())
+                        .setFlippedHorizontally(region.isFlippedHorizontally()))
                 .toList();
     }
 }

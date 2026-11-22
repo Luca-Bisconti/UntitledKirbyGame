@@ -27,6 +27,7 @@ public final class PlayerController implements InputHandler, Updatable {
     private final float minX;
     private final float maxX;
     private final float groundY;
+    private final boolean walkOnly;
 
     private boolean left;
     private boolean right;
@@ -41,14 +42,22 @@ public final class PlayerController implements InputHandler, Updatable {
     public PlayerController(Node player, SpriteAnimator animator, SpriteAnimation idle,
                             SpriteAnimation walk, SpriteAnimation crouchAnimation,
                             float minX, float maxX, float groundY) {
+        this(player, animator, idle, walk, crouchAnimation, minX, maxX, groundY, false);
+    }
+
+
+    public PlayerController(Node player, SpriteAnimator animator, SpriteAnimation idle,
+                            SpriteAnimation walk, SpriteAnimation crouchAnimation,
+                            float minX, float maxX, float groundY, boolean walkOnly) {
         this.player = Objects.requireNonNull(player);
         this.animator = Objects.requireNonNull(animator);
         this.idle = Objects.requireNonNull(idle);
         this.walk = Objects.requireNonNull(walk);
-        this.crouchAnimation = Objects.requireNonNull(crouchAnimation);
+        this.crouchAnimation = walkOnly ? null : Objects.requireNonNull(crouchAnimation);
         this.minX = minX;
         this.maxX = maxX;
         this.groundY = groundY;
+        this.walkOnly = walkOnly;
         update(0);
     }
 
@@ -60,16 +69,16 @@ public final class PlayerController implements InputHandler, Updatable {
     public void handleInput(InputState input) {
         left = input.isDown(Action.LEFT);
         right = input.isDown(Action.RIGHT);
-        lookUp = input.isDown(Action.UP);
-        crouch = input.isDown(Action.DOWN);
-        jumpPressed = input.isPressed(Action.JUMP);
+        lookUp = !walkOnly && input.isDown(Action.UP);
+        crouch = !walkOnly && input.isDown(Action.DOWN);
+        jumpPressed = !walkOnly && input.isPressed(Action.JUMP);
     }
 
     @Override
     public void update(double dt) {
         Updatable.requireValidDeltaTime(dt);
         Transform2D transform = player.getLocal();
-        boolean grounded = transform.posY() >= groundY && velocityY >= 0;
+        boolean grounded = walkOnly || (transform.posY() >= groundY && velocityY >= 0);
         if (jumpPressed && grounded && !crouch) {
             velocityY = -JUMP_SPEED;
         }
@@ -82,7 +91,7 @@ public final class PlayerController implements InputHandler, Updatable {
         }
         x = Math.clamp(x, minX, maxX);
 
-        double y = transform.posY();
+        double y = walkOnly ? groundY : transform.posY();
         if (!grounded || velocityY < 0) {
             y += (velocityY + 0.5 * GRAVITY * dt) * dt;
             velocityY += GRAVITY * dt;
@@ -92,8 +101,13 @@ public final class PlayerController implements InputHandler, Updatable {
             velocityY = 0;
         }
 
-        if ((float) x != transform.posX() || (float) y != transform.posY()) {
+        boolean movedHorizontally = (float) x != transform.posX();
+        if (movedHorizontally || (float) y != transform.posY()) {
             player.setLocal(transform.withPosition((float) x, (float) y));
+        }
+
+        if (walkOnly && direction != 0) {
+            animator.setFlippedHorizontally(direction < 0);
         }
 
         if (y < groundY || velocityY < 0) {
@@ -102,7 +116,7 @@ public final class PlayerController implements InputHandler, Updatable {
             pose = PlayerPose.CROUCH;
         } else if (lookUp) {
             pose = PlayerPose.LOOK_UP;
-        } else if (direction != 0) {
+        } else if (direction != 0 && (!walkOnly || movedHorizontally)) {
             pose = PlayerPose.WALK;
         } else {
             pose = PlayerPose.IDLE;

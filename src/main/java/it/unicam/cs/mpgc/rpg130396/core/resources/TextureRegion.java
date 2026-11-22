@@ -8,6 +8,7 @@ public final class TextureRegion {
     private int posX, posY;
     private int width, height;
     private int originX, originY;
+    private boolean flippedHorizontally;
 
     public TextureRegion(Texture texture) {
         this(texture, 0, 0, Objects.requireNonNull(texture).width(), texture.height());
@@ -43,6 +44,16 @@ public final class TextureRegion {
         originX = x;
         originY = y;
         return this;
+    }
+
+
+    public TextureRegion setFlippedHorizontally(boolean flippedHorizontally) {
+        this.flippedHorizontally = flippedHorizontally;
+        return this;
+    }
+
+    public boolean isFlippedHorizontally() {
+        return flippedHorizontally;
     }
 
     public int posX() { return posX; }

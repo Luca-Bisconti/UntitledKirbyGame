@@ -18,9 +18,9 @@ import java.util.TreeMap;
 public class Renderer {
 
     private final DrawContext context;
-    private final RenderTarget sceneTarget;
-    private final Map<Integer, RenderTarget> layerTargets;
-    private final int logicalWidth;
+    private RenderTarget sceneTarget;
+    private Map<Integer, RenderTarget> layerTargets;
+    private int logicalWidth;
 
     private List<PassBinding> bindings;
 
@@ -50,17 +50,27 @@ public class Renderer {
             List<PassBinding> bindings
     ) {
         this.context = Objects.requireNonNull(context);
-        sceneTarget = Objects.requireNonNull(output);
+        configureLayers(layerTargets, output, logicalWidth, logicalHeight, bindings);
+    }
+
+
+    public final void configureLayers(
+            Map<Integer, RenderTarget> layerTargets,
+            RenderTarget output,
+            int logicalWidth,
+            int logicalHeight,
+            List<PassBinding> bindings
+    ) {
+        Objects.requireNonNull(output);
         requireAspectRatio(logicalWidth, logicalHeight);
-        this.logicalWidth = logicalWidth;
-        this.layerTargets = Collections.unmodifiableMap(new TreeMap<>(Map.copyOf(layerTargets)));
-        if (this.layerTargets.isEmpty()) {
+        Map<Integer, RenderTarget> sortedTargets = Collections.unmodifiableMap(new TreeMap<>(Map.copyOf(layerTargets)));
+        if (sortedTargets.isEmpty()) {
             throw new IllegalArgumentException("At least one layer target is required");
         }
 
         Set<RenderTarget> seen = Collections.newSetFromMap(new IdentityHashMap<>());
         RenderTarget previous = null;
-        for (RenderTarget target : this.layerTargets.values()) {
+        for (RenderTarget target : sortedTargets.values()) {
             if (target == output) {
                 throw new IllegalArgumentException("The output cannot also be a layer target");
             }
@@ -72,8 +82,13 @@ public class Renderer {
             }
             previous = target;
         }
-        validateLayerSizes();
-        this.bindings = validatedPasses(bindings);
+        validateLayerSizes(output, sortedTargets);
+        List<PassBinding> passes = validatedPasses(bindings);
+
+        this.sceneTarget = output;
+        this.logicalWidth = logicalWidth;
+        this.layerTargets = sortedTargets;
+        this.bindings = passes;
     }
 
 
@@ -105,7 +120,7 @@ public class Renderer {
     }
 
     private void renderLayers(List<DrawCall> calls) {
-        validateLayerSizes();
+        validateLayerSizes(sceneTarget, layerTargets);
         Map<Integer, List<DrawCall>> callsByLayer = new HashMap<>();
         for (DrawCall call : calls) {
             if (!layerTargets.containsKey(call.layer())) {
@@ -137,7 +152,7 @@ public class Renderer {
         }
     }
 
-    private void validateLayerSizes() {
+    private static void validateLayerSizes(RenderTarget sceneTarget, Map<Integer, RenderTarget> layerTargets) {
         requireAspectRatio(sceneTarget.width(), sceneTarget.height());
         for (RenderTarget target : layerTargets.values()) {
             requireAspectRatio(target.width(), target.height());
