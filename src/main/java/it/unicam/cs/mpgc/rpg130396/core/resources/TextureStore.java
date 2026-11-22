@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-
 public class TextureStore {
 
     private final TextureLoader textureLoader;
@@ -25,7 +24,6 @@ public class TextureStore {
         });
     }
 
-
     public void remove(String key) {
         if (loadedTextures.remove(Objects.requireNonNull(key)) == null) {
             throw new NoSuchElementException("Texture not loaded: " + key);
@@ -35,7 +33,6 @@ public class TextureStore {
     public void clear() {
         loadedTextures.clear();
     }
-
 
     public Texture get(String key) {
         return loadedTextures.get(Objects.requireNonNull(key));

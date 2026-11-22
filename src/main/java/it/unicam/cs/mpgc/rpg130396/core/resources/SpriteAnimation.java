@@ -3,7 +3,6 @@ package it.unicam.cs.mpgc.rpg130396.core.resources;
 import java.util.List;
 import java.util.Objects;
 
-
 public final class SpriteAnimation {
 
     private final List<TextureRegion> frames;
@@ -22,7 +21,6 @@ public final class SpriteAnimation {
         this.frameDuration = frameDuration;
         this.loop = loop;
     }
-
 
     public List<TextureRegion> frames() {
         return copyFrames(frames);

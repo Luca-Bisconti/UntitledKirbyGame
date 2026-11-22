@@ -3,7 +3,6 @@ package it.unicam.cs.mpgc.rpg130396.core.rendering;
 import it.unicam.cs.mpgc.rpg130396.core.math.Transform2D;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 
-
 public final class Compositor implements RenderPass {
 
     @Override

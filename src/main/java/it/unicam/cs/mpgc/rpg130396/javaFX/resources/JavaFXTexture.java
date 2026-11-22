@@ -16,7 +16,6 @@ public class JavaFXTexture implements Texture {
     }
 
 
-
     public static JavaFXTexture solid(int w, int h, int argb) {
         WritableImage img = new WritableImage(w, h);
         PixelWriter pw = img.getPixelWriter();

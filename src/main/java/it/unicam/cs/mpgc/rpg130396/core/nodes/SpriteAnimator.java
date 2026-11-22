@@ -20,7 +20,6 @@ public final class SpriteAnimator implements Updatable {
         this.sprite = Objects.requireNonNull(sprite);
     }
 
-
     public void play(SpriteAnimation animation) {
         this.animation = Objects.requireNonNull(animation);
         frames = animation.frames();
@@ -70,7 +69,6 @@ public final class SpriteAnimator implements Updatable {
         double frameDuration = animation.frameDuration();
         double elapsedFrames = dt / frameDuration;
         if (animation.loop()) {
-
             if (elapsedFrames >= 0x1.0p52) {
                 elapsedFrames = (dt % (frameDuration * frameCount)) / frameDuration;
             }

@@ -7,7 +7,7 @@ public final class Camera extends Node {
 
     private final int resX, resY;
     private float zoom = 1f;
-    private float anchorX, anchorY;            
+    private float anchorX, anchorY;
 
     public Camera(String name, int resX, int resY) {
         super(name);
@@ -53,7 +53,6 @@ public final class Camera extends Node {
         }
         return new Rect(minX, minY, width, height);
     }
-
 
     public Transform2D toScreen(Transform2D transform) {
         Transform2D camera = getWorld();

@@ -1,6 +1,5 @@
 package it.unicam.cs.mpgc.rpg130396.core.math;
 
-
 public record Transform2D(float posX, float posY, float rotation, float scale) {
 
     public Transform2D {

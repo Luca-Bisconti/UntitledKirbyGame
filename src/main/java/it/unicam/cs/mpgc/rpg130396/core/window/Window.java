@@ -8,7 +8,6 @@ public interface Window {
     public void open();
     public void close();
 
-
     public Window setTitle(String title);
     public Window setWidth(double width);
     public Window setHeight(double height);
@@ -16,13 +15,11 @@ public interface Window {
     public Window setIconFilePath(String path);
 
 
-
     public String getTitle();
     public double getWidth();
     public double getHeight();
     public boolean isResizable();
     public String getIconFilePath();
-
 
     public DrawContext getDrawContext();
     public RenderTarget getScreenTarget();

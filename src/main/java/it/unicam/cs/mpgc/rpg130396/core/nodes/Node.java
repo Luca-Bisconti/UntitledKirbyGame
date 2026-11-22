@@ -19,10 +19,8 @@ public abstract class Node {
     private final List<Node> children = new ArrayList<>();
     private final List<Component> components = new ArrayList<>();
 
-
     private Transform2D local = new Transform2D();
     private Transform2D world;
-
 
     private boolean visible = true;
     private boolean active = true;
@@ -78,9 +76,6 @@ public abstract class Node {
     }
 
 
-
-
-
     public void addChild(Node child) {
 
         Objects.requireNonNull(child, "Child cannot be null");
@@ -96,7 +91,6 @@ public abstract class Node {
                     "Node already has a parent"
             );
         }
-
 
         Node ancestor = this;
 
@@ -130,13 +124,9 @@ public abstract class Node {
     }
 
 
-
-
-
     private void markDirty() {
 
         world = null;
-
 
         for (Node child : children) {
             child.markDirty();
@@ -152,14 +142,12 @@ public abstract class Node {
         markDirty();
     }
 
-
     public final Transform2D getWorld() {
         if (world == null) {
             world = parent == null ? local : Transform2D.compose(parent.getWorld(), local);
         }
         return world;
     }
-
 
     final void setWorldX(float x) {
         Transform2D world = getWorld();
@@ -181,9 +169,6 @@ public abstract class Node {
                 (float) (-dx * sin + dy * cos)
         ));
     }
-
-
-
 
 
     public void addComponent(Component component) {
@@ -223,27 +208,20 @@ public abstract class Node {
     }
 
 
-
-
-
     public void processInput(InputState input) {
 
         if (!active) {
             return;
         }
 
-
         forEachComp(
                 InputHandler.class,
                 component -> component.handleInput(input)
         );
 
-
         List<Node> childrenSnapshot = new ArrayList<>(children);
 
         for (Node child : childrenSnapshot) {
-
-
 
             if (child.parent == this) {
                 child.processInput(input);
@@ -258,13 +236,11 @@ public abstract class Node {
             return;
         }
 
-
         for (Updatable component : getComp(Updatable.class)) {
             if (!(component instanceof PostUpdatable)) {
                 component.update(dt);
             }
         }
-
 
         List<Node> childrenSnapshot = new ArrayList<>(children);
 

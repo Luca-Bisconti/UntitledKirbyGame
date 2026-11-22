@@ -41,10 +41,8 @@ public final class DemoSceneFactory {
 
     public static Scene create(Renderer renderer, RenderTarget screen) {
 
-
         int logicalWidth = 320;
         int logicalHeight = 180;
-
 
         Camera camera = new Camera(
                 "MainCamera",
@@ -52,13 +50,10 @@ public final class DemoSceneFactory {
                 logicalHeight
         );
 
-
         camera.setAnchor(0, 0);
-
 
         Node root = new Node("Root") {};
         Scene scene = new Scene(root, camera, true);
-
 
         TextureLoader loader = new JavaFXTextureLoader();
         TextureStore textures = new TextureStore(loader);
@@ -77,7 +72,6 @@ public final class DemoSceneFactory {
         );
 
         bridgeRegion.setOrigin(0, BRIDGE_ORIGIN_Y);
-
 
 
         Node bridge = createBridge(
@@ -114,7 +108,6 @@ public final class DemoSceneFactory {
         addCloseMountains(root, textures.get(mountainsPath), camera, cameraFollow);
         root.addComponent(cameraFollow);
 
-
         RenderTarget skyTarget =
                 new JavaFXRenderTarget(640, 360);
         RenderTarget skyBloomTarget =
@@ -129,7 +122,6 @@ public final class DemoSceneFactory {
                 new JavaFXRenderTarget(640, 360);
         RenderTarget kirbyTarget =
                 new JavaFXRenderTarget(320, 180);
-
 
         double skyBloomThreshold = 0.65;
         double skyBloomIntensity = 2;

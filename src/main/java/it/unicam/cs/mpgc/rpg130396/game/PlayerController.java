@@ -38,13 +38,11 @@ public final class PlayerController implements InputHandler, Updatable {
     private PlayerPose pose;
     private SpriteAnimation currentAnimation;
 
-
     public PlayerController(Node player, SpriteAnimator animator, SpriteAnimation idle,
                             SpriteAnimation walk, SpriteAnimation crouchAnimation,
                             float minX, float maxX, float groundY) {
         this(player, animator, idle, walk, crouchAnimation, minX, maxX, groundY, false);
     }
-
 
     public PlayerController(Node player, SpriteAnimator animator, SpriteAnimation idle,
                             SpriteAnimation walk, SpriteAnimation crouchAnimation,

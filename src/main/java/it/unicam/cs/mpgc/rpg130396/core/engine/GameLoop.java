@@ -7,7 +7,6 @@ import it.unicam.cs.mpgc.rpg130396.core.rendering.Renderer;
 
 import java.util.Objects;
 
-
 public final class GameLoop {
 
     private static final double MAX_DELTA_SECONDS = 0.05;

@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-
 public final class CameraFollowComponent implements PostUpdatable {
 
     private final Camera camera;
@@ -15,7 +14,6 @@ public final class CameraFollowComponent implements PostUpdatable {
     private final float levelMinX;
     private final float levelMaxX;
     private final Set<ParallaxComponent> backgrounds = new LinkedHashSet<>();
-
 
     public CameraFollowComponent(Camera camera, Node target, float offsetX, float levelMinX, float levelMaxX) {
         this.camera = Objects.requireNonNull(camera);
@@ -28,7 +26,6 @@ public final class CameraFollowComponent implements PostUpdatable {
         this.levelMinX = levelMinX;
         this.levelMaxX = levelMaxX;
     }
-
 
     public void addParallax(ParallaxComponent parallax) {
         if (!Objects.requireNonNull(parallax).usesCamera(camera)) {
@@ -45,7 +42,6 @@ public final class CameraFollowComponent implements PostUpdatable {
         double minViewLeft = levelMinX;
         double maxViewLeft = (double) levelMaxX - view.width();
         double desiredViewLeft = (double) target.getWorld().posX() + offsetX - anchorOffset;
-
         double viewLeft = maxViewLeft < minViewLeft
                 ? (minViewLeft + maxViewLeft) / 2
                 : Math.clamp(desiredViewLeft, minViewLeft, maxViewLeft);

@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-
 public class Renderer {
 
     private final DrawContext context;
@@ -37,10 +36,6 @@ public class Renderer {
         this.bindings = validatedPasses(bindings);
     }
 
-
-
-
-
     public Renderer(
             DrawContext context,
             Map<Integer, RenderTarget> layerTargets,
@@ -52,7 +47,6 @@ public class Renderer {
         this.context = Objects.requireNonNull(context);
         configureLayers(layerTargets, output, logicalWidth, logicalHeight, bindings);
     }
-
 
     public final void configureLayers(
             Map<Integer, RenderTarget> layerTargets,
@@ -90,7 +84,6 @@ public class Renderer {
         this.layerTargets = sortedTargets;
         this.bindings = passes;
     }
-
 
     public Renderer setPipeline(List<PassBinding> bindings) {
         this.bindings = validatedPasses(bindings);
@@ -137,7 +130,6 @@ public class Renderer {
                 context.clear();
                 previous = target;
             }
-
             float scale = (float) target.width() / logicalWidth;
             for (DrawCall call : callsByLayer.getOrDefault(entry.getKey(), List.of())) {
                 Transform2D transform = call.transform2D();

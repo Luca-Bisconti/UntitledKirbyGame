@@ -15,16 +15,13 @@ public class PolledInput implements InputState {
     private final Set<Action> released =
             EnumSet.noneOf(Action.class);
 
-
     public void press(Action action) {
-
 
         if (down.add(action)) {
             pressed.add(action);
             released.remove(action);
         }
     }
-
 
     public void release(Action action) {
 
@@ -34,12 +31,10 @@ public class PolledInput implements InputState {
         }
     }
 
-
     public void endFrame() {
         pressed.clear();
         released.clear();
     }
-
 
     public void releaseAll() {
 

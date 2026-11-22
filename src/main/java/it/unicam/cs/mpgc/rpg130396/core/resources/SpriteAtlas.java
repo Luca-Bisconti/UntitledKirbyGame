@@ -2,10 +2,6 @@ package it.unicam.cs.mpgc.rpg130396.core.resources;
 
 import java.util.Objects;
 
-
-
-
-
 public final class SpriteAtlas {
 
     private final Texture texture;
@@ -15,7 +11,6 @@ public final class SpriteAtlas {
     private final int rows;
     private final int originX;
     private final int originY;
-
 
     public SpriteAtlas(Texture texture, int cellWidth, int cellHeight, int originX, int originY) {
         this.texture = Objects.requireNonNull(texture);

@@ -17,7 +17,6 @@ public class JavaFXRenderTarget implements RenderTarget {
     private WritableImage snapshot;
     private JavaFXTexture snapshotTexture;
 
-
     public JavaFXRenderTarget(Canvas canvas) {
         this.canvas = Objects.requireNonNull(canvas);
         if (!(canvas.getWidth() >= 1 && canvas.getWidth() <= Integer.MAX_VALUE
@@ -27,7 +26,6 @@ public class JavaFXRenderTarget implements RenderTarget {
         snapshotParameters.setFill(Color.TRANSPARENT);
     }
 
-
     public JavaFXRenderTarget(int width, int height) {
         this(new Canvas(width, height));
     }
@@ -36,10 +34,6 @@ public class JavaFXRenderTarget implements RenderTarget {
 
     @Override public int width()  { return (int) canvas.getWidth(); }
     @Override public int height() { return (int) canvas.getHeight(); }
-
-
-
-
 
     @Override
     public Texture asTexture() {

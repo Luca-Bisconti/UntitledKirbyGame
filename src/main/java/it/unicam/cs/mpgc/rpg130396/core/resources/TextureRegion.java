@@ -39,13 +39,11 @@ public final class TextureRegion {
         return this;
     }
 
-
     public TextureRegion setOrigin(int x, int y) {
         originX = x;
         originY = y;
         return this;
     }
-
 
     public TextureRegion setFlippedHorizontally(boolean flippedHorizontally) {
         this.flippedHorizontally = flippedHorizontally;

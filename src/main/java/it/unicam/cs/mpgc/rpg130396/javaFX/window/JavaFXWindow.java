@@ -38,7 +38,6 @@ public class JavaFXWindow implements Window {
         stage.close();
     }
 
-
     @Override public Window setTitle(String title) { stage.setTitle(title); return this; }
 
     @Override public Window setWidth(double width) {
@@ -62,7 +61,6 @@ public class JavaFXWindow implements Window {
         stage.getIcons().setAll(new Image(path));
         return this;
     }
-
 
     @Override public String getTitle()        { return stage.getTitle(); }
     @Override public double getWidth()        { return canvas.getWidth(); }

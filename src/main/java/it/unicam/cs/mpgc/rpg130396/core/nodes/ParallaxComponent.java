@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg130396.core.nodes;
 
 import java.util.Objects;
 
-
 public final class ParallaxComponent implements Component {
 
     private final Node background;
@@ -10,7 +9,6 @@ public final class ParallaxComponent implements Component {
     private final float factor;
     private final float initialBackgroundX;
     private final float initialCameraX;
-
 
     public ParallaxComponent(Node background, Camera camera, float factor) {
         this.background = Objects.requireNonNull(background);
@@ -26,7 +24,6 @@ public final class ParallaxComponent implements Component {
     boolean usesCamera(Camera camera) {
         return this.camera == camera;
     }
-
 
     public void updateFromCamera(double dt) {
         Updatable.requireValidDeltaTime(dt);

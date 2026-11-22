@@ -16,7 +16,6 @@ import javafx.scene.effect.Effect;
 import javafx.scene.effect.ImageInput;
 import javafx.scene.paint.Color;
 
-
 public final class JavaFXNativeBloomPass implements RenderPass {
 
     private static final Transform2D ORIGIN = new Transform2D();
@@ -33,11 +32,6 @@ public final class JavaFXNativeBloomPass implements RenderPass {
         this(threshold, 1);
     }
 
-
-
-
-
-
     public JavaFXNativeBloomPass(double threshold, double intensity) {
         if (!Double.isFinite(threshold) || threshold < 0 || threshold > 1) {
             throw new IllegalArgumentException("Bloom threshold must be in [0, 1]");
@@ -53,14 +47,11 @@ public final class JavaFXNativeBloomPass implements RenderPass {
         if (intensity == 0 || intensity == 1) {
             return null;
         }
-
         Blend originalRgb = new Blend(BlendMode.SRC_OVER, black, original);
         Blend nativeRgb = new Blend(BlendMode.SRC_OVER, black, bloomed);
         Blend halo = new Blend(BlendMode.DIFFERENCE, originalRgb, nativeRgb);
         Blend adjustedRgb = new Blend(intensity > 1 ? BlendMode.ADD : BlendMode.DIFFERENCE, nativeRgb, halo);
         adjustedRgb.setOpacity(Math.abs(intensity - 1));
-
-
 
         ColorAdjust silhouette = new ColorAdjust(0, 0, -1, 0);
         silhouette.setInput(bloomed);

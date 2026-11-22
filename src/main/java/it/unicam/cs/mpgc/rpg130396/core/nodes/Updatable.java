@@ -2,7 +2,6 @@ package it.unicam.cs.mpgc.rpg130396.core.nodes;
 
 public interface Updatable extends Component {
 
-
     void update(double dt);
 
     static void requireValidDeltaTime(double dt) {
