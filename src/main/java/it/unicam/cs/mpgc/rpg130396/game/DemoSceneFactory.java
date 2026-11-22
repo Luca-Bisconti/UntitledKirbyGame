@@ -224,13 +224,13 @@ public final class DemoSceneFactory {
         TextureRegion region = new TextureRegion(texture).setOrigin(0, 0);
         Sprite moon = new Sprite("Moon").setRegion(region);
         moon.setLayer(MOON_LAYER);
-        float moonX = 220f;
-        float moonY = 20f;
-        float moonScale = 0.5f;
+        float moonX = 200f;
+        float moonY = 15f;
+        float moonScale = 1f;
         moon.setLocal(moon.getLocal().withPosition(moonX, moonY).withScale(moonScale));
         root.addChild(moon);
 
-        float moonParallax = 0.1f;
+        float moonParallax = 0f;
         ParallaxComponent parallax = new ParallaxComponent(moon, camera, moonParallax);
         moon.addComponent(parallax);
         cameraFollow.addParallax(parallax);
@@ -245,11 +245,13 @@ public final class DemoSceneFactory {
         mountains.setLayer(CLOSE_MOUNTAINS_LAYER);
         float mountainsX = 0f;
         float mountainsY = 180f;
-        float mountainsScale = 0.5f;
-        mountains.setLocal(mountains.getLocal().withPosition(mountainsX, mountainsY).withScale(mountainsScale));
+        float mountainsScale = 1f;
+        mountains.setLocal(mountains.getLocal()
+                .withPosition(mountainsX, mountainsY)
+                .withScale(mountainsScale));
         root.addChild(mountains);
 
-        float mountainsParallax = 0.6f;
+        float mountainsParallax = 0.2f;
         ParallaxComponent parallax = new ParallaxComponent(mountains, camera, mountainsParallax);
         mountains.addComponent(parallax);
         cameraFollow.addParallax(parallax);
@@ -265,9 +267,9 @@ public final class DemoSceneFactory {
 
         TextureRegion firstFrame = frames.getFirst();
         SpriteAnimation walk = new SpriteAnimation(frames, 0.12, true);
-        SpriteAnimation idle = new SpriteAnimation(List.of(firstFrame), 0.12, false);
+        SpriteAnimation idle = new SpriteAnimation(List.of(frames.get(8)), 0.12, false);
 
-        float groundY = BRIDGE_Y + (BRIDGE_SURFACE_Y - BRIDGE_ORIGIN_Y) * BRIDGE_SCALE;
+        float groundY = 128;
         float bridgeWidth = BRIDGE_SEGMENTS * BRIDGE_WIDTH * BRIDGE_SCALE;
         float minX = firstFrame.originX();
         float maxX = bridgeWidth - (firstFrame.width() - firstFrame.originX());
