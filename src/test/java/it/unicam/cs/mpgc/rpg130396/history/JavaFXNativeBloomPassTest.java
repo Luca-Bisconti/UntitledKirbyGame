@@ -14,4 +14,12 @@ class JavaFXNativeBloomPassTest {
         var output = new RenderTestSupport.Target(16, 9);
         assertThrows(IllegalArgumentException.class, () -> pass.render(new RenderTestSupport.Context(), input, output));
     }
+
+    @Test
+    void acceptsSupportedIntensityLimitsAndRejectsOtherValues() {
+        assertDoesNotThrow(() -> new JavaFXNativeBloomPass(0.5, 0));
+        assertDoesNotThrow(() -> new JavaFXNativeBloomPass(0.5, 2));
+        assertThrows(IllegalArgumentException.class, () -> new JavaFXNativeBloomPass(0.5, 2.01));
+        assertThrows(IllegalArgumentException.class, () -> new JavaFXNativeBloomPass(0.5, Double.NaN));
+    }
 }

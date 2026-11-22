@@ -1,7 +1,9 @@
 package it.unicam.cs.mpgc.rpg130396.game;
 
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Camera;
+import it.unicam.cs.mpgc.rpg130396.core.nodes.CameraFollowComponent;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Node;
+import it.unicam.cs.mpgc.rpg130396.core.nodes.ParallaxComponent;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Scene;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.Sprite;
 import it.unicam.cs.mpgc.rpg130396.core.nodes.SpriteAnimator;
@@ -15,6 +17,7 @@ import it.unicam.cs.mpgc.rpg130396.core.resources.Texture;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureLoader;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureRegion;
 import it.unicam.cs.mpgc.rpg130396.core.resources.TextureStore;
+import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXNativeBloomPass;
 import it.unicam.cs.mpgc.rpg130396.javaFX.rendering.JavaFXRenderTarget;
 import it.unicam.cs.mpgc.rpg130396.javaFX.resources.JavaFXTextureLoader;
 
@@ -24,11 +27,14 @@ import java.util.Map;
 
 public final class DemoSceneFactory {
 
+    private static final int SKY_LAYER = -3;
+    private static final int MOON_LAYER = -2;
+    private static final int CLOSE_MOUNTAINS_LAYER = -1;
     private static final int BRIDGE_SEGMENTS = 6;
     private static final int BRIDGE_WIDTH = 224;
     private static final int BRIDGE_ORIGIN_Y = 226;
     private static final float BRIDGE_Y = 170;
-    private static final float BRIDGE_SCALE = 0.55f;
+    private static final float BRIDGE_SCALE = 0.5f;
     private static final int BRIDGE_SURFACE_Y = 132;
 
     private DemoSceneFactory() {}
@@ -56,6 +62,11 @@ public final class DemoSceneFactory {
 
         TextureLoader loader = new JavaFXTextureLoader();
         TextureStore textures = new TextureStore(loader);
+
+        String skyPath = "/assets/environment/skySheet.png";
+        textures.load(skyPath);
+        Sprite sky = createBackdrop(textures.get(skyPath));
+        root.addChild(sky);
 
         String bridgePath = "/assets/environment/bridge.png";
 
@@ -86,15 +97,52 @@ public final class DemoSceneFactory {
         Sprite kirby = createKirby(textures.get(kirbyPath));
         root.addChild(kirby);
 
+        float levelWidth = BRIDGE_SEGMENTS * BRIDGE_WIDTH * BRIDGE_SCALE;
+        CameraFollowComponent cameraFollow = new CameraFollowComponent(
+                camera,
+                kirby,
+                -logicalWidth / 2f,
+                0f,
+                levelWidth
+        );
+        cameraFollow.addParallax(new ParallaxComponent(sky, camera, 0f));
+        String moonPath = "/assets/environment/moon.png";
+        textures.load(moonPath);
+        addMoon(root, textures.get(moonPath), camera, cameraFollow);
+        String mountainsPath = "/assets/environment/closeM.png";
+        textures.load(mountainsPath);
+        addCloseMountains(root, textures.get(mountainsPath), camera, cameraFollow);
+        root.addComponent(cameraFollow);
 
+
+        RenderTarget skyTarget =
+                new JavaFXRenderTarget(640, 360);
+        RenderTarget skyBloomTarget =
+                new JavaFXRenderTarget(640, 360);
+        RenderTarget moonTarget =
+                new JavaFXRenderTarget(640, 360);
+        RenderTarget moonBloomTarget =
+                new JavaFXRenderTarget(640, 360);
+        RenderTarget closeMountainsTarget =
+                new JavaFXRenderTarget(640, 360);
         RenderTarget bridgeTarget =
                 new JavaFXRenderTarget(640, 360);
         RenderTarget kirbyTarget =
                 new JavaFXRenderTarget(320, 180);
 
 
+        double skyBloomThreshold = 0.65;
+        double skyBloomIntensity = 2;
+        JavaFXNativeBloomPass skyBloom = new JavaFXNativeBloomPass(skyBloomThreshold, skyBloomIntensity);
+        double moonBloomThreshold = 0.8;
+        double moonBloomIntensity = 1.1f;
+        JavaFXNativeBloomPass moonBloom = new JavaFXNativeBloomPass(moonBloomThreshold, moonBloomIntensity);
+
         renderer.configureLayers(
                 Map.of(
+                        SKY_LAYER, skyTarget,
+                        MOON_LAYER, moonTarget,
+                        CLOSE_MOUNTAINS_LAYER, closeMountainsTarget,
                         0, bridgeTarget,
                         1, kirbyTarget
                 ),
@@ -103,10 +151,40 @@ public final class DemoSceneFactory {
                 logicalHeight,
                 List.of(
                         new PassBinding(
+                                skyBloom,
+                                skyTarget,
+                                skyBloomTarget,
+                                true
+                        ),
+                        new PassBinding(
+                                new Compositor(),
+                                skyBloomTarget,
+                                screen,
+                                true
+                        ),
+                        new PassBinding(
+                                moonBloom,
+                                moonTarget,
+                                moonBloomTarget,
+                                true
+                        ),
+                        new PassBinding(
+                                new Compositor(),
+                                moonBloomTarget,
+                                screen,
+                                false
+                        ),
+                        new PassBinding(
+                                new Compositor(),
+                                closeMountainsTarget,
+                                screen,
+                                false
+                        ),
+                        new PassBinding(
                                 new Compositor(),
                                 bridgeTarget,
                                 screen,
-                                true
+                                false
                         ),
                         new PassBinding(
                                 new Compositor(),
@@ -120,6 +198,63 @@ public final class DemoSceneFactory {
         return scene;
     }
 
+
+    private static Sprite createBackdrop(Texture texture) {
+        SpriteAtlas atlas = new SpriteAtlas(texture, 640, 360, 0, 0);
+        int frameCount = 12;
+        List<TextureRegion> frames = new ArrayList<>(2 * frameCount - 2);
+        for (int i = 0; i < frameCount; i++) {
+            frames.add(atlas.frame(i));
+        }
+        for (int i = frameCount - 2; i > 0; i--) {
+            frames.add(frames.get(i));
+        }
+
+        Sprite sky = new Sprite("Sky");
+        sky.setLayer(SKY_LAYER);
+        sky.setLocal(sky.getLocal().withScale(0.5f));
+        SpriteAnimator animator = new SpriteAnimator(sky);
+        sky.addComponent(animator);
+        animator.play(new SpriteAnimation(frames, 0.1, true));
+        return sky;
+    }
+
+    private static Sprite addMoon(Node root, Texture texture, Camera camera,
+                                  CameraFollowComponent cameraFollow) {
+        TextureRegion region = new TextureRegion(texture).setOrigin(0, 0);
+        Sprite moon = new Sprite("Moon").setRegion(region);
+        moon.setLayer(MOON_LAYER);
+        float moonX = 220f;
+        float moonY = 20f;
+        float moonScale = 0.5f;
+        moon.setLocal(moon.getLocal().withPosition(moonX, moonY).withScale(moonScale));
+        root.addChild(moon);
+
+        float moonParallax = 0.1f;
+        ParallaxComponent parallax = new ParallaxComponent(moon, camera, moonParallax);
+        moon.addComponent(parallax);
+        cameraFollow.addParallax(parallax);
+        return moon;
+    }
+
+    private static Sprite addCloseMountains(Node root, Texture texture, Camera camera,
+                                           CameraFollowComponent cameraFollow) {
+        TextureRegion region = new TextureRegion(texture);
+        region.setOrigin(0, region.height());
+        Sprite mountains = new Sprite("CloseMountains").setRegion(region);
+        mountains.setLayer(CLOSE_MOUNTAINS_LAYER);
+        float mountainsX = 0f;
+        float mountainsY = 180f;
+        float mountainsScale = 0.5f;
+        mountains.setLocal(mountains.getLocal().withPosition(mountainsX, mountainsY).withScale(mountainsScale));
+        root.addChild(mountains);
+
+        float mountainsParallax = 0.6f;
+        ParallaxComponent parallax = new ParallaxComponent(mountains, camera, mountainsParallax);
+        mountains.addComponent(parallax);
+        cameraFollow.addParallax(parallax);
+        return mountains;
+    }
 
     private static Sprite createKirby(Texture texture) {
         SpriteAtlas atlas = new SpriteAtlas(texture, 26, 23, 13, 23);
